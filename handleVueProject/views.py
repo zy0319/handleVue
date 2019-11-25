@@ -249,7 +249,7 @@ def downVerify1(request):
 
 @auth_permission_required('handleProjectVue.user')
 def ServerList(request):
-    serverlist = server.objects.values('id', 'ip', 'port')
+    serverlist = server.objects.values('id', 'ip', 'port', 'prefix')
     resp = {'status': 1, 'message': serverlist}
     return HttpResponse(ujson.dumps(resp))
 
@@ -440,9 +440,9 @@ def Download(request):
 def upload_file(request):
     if request.method == 'POST':
         userid = request.POST['userid']
-        user = models.user.objects.get(id=userid)
-        username = user.username
-        company = user.company
+        user1 = user.objects.get(id=userid)
+        username = user1.username
+        company = user1.company
         serverid = request.POST['serverid']
         server2 = server.objects.get(id=serverid)
         # username = request.POST['name']
@@ -614,7 +614,7 @@ def UpdatehHandle(request):
     handle1 = handles.objects.get(perix=perfix)
     data = response.get('Data')
     record.index = []
-    record.index = []
+    record.type = []
     record.value = []
     for i in data:
         record.index.append(i.get('index'))
