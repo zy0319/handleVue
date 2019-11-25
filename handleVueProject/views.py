@@ -528,6 +528,9 @@ def upload_file(request):
     return response
 
 
+
+
+
 @auth_permission_required('handleProjectVue.user')
 def OneQuery(request):
     data = ujson.loads(request.body.decode('utf-8'))

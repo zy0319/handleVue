@@ -58,6 +58,7 @@ class handles(models.Model):
 class server(models.Model):
     ip = models.CharField(max_length=64)
     port = models.IntegerField(max_length=64)
+    prefix = models.CharField(max_length=256)
     username = models.CharField(max_length=64, null=True)
     password = models.CharField(max_length=256, null=True)
 
