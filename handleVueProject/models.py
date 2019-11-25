@@ -71,6 +71,25 @@ class server(models.Model):
         return self.ip
 
 
+class resolveRecord(models.Model):
+    ip = models.CharField(max_length=64)
+    prefix = models.CharField(max_length=256)
+    fail = models.IntegerField(max_length=64)
+    success = models.IntegerField(max_length=64)
+    time = models.CharField(max_length=256)
+
+    class Meta:
+        db_table = 'resolveRecord'
+
+    @classmethod
+    def create(cls, ip, prefix, fail, success, time):
+        resolveRecord = cls(id=id, ip=ip, prefix=prefix, fail=fail, success=success,time=time)
+        return resolveRecord
+
+    def __str__(self):  # __unicode__ on Python 2
+        return self.prefix
+
+
 class handle():
     perix = ""
     context = []
