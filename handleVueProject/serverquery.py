@@ -61,6 +61,25 @@ def findsta():
         ssh.close()
     return userate
 
+# 返回网卡流量
+def networkFlow():
+    for host in host_list:
+        ssh.connect(hostname=host['ip'], port=host['port'], username=host['username'], password=host['password'])
+        # print(host['ip'])
+        stdin, stdout, stderr = ssh.exec_command('sar -n DEV 1 1')
+        str_out = stdout.read().decode("utf-8")
+        str_err = stderr.read().decode("utf-8")
+
+        if str_err != "":
+            print(str_err)
+            continue
+        str_total = re.search('lo .*?\n', str_out).group(0)
+        s = str_total.split()
+        rxkb = s[3]
+        txkb = s[4]
+        ssh.close()
+        return rxkb+'='+txkb
+
 
 def DNSquery(ip, biaoshi):
     for host in host_list:
@@ -117,4 +136,4 @@ def Naptrquery(ip, biaoshi):
     return datalist
 
 if __name__ == '__main__':
-    print findsta()
+    print networkFlow()
