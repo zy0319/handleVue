@@ -259,7 +259,7 @@ def CreateHandle(request):
     response = ujson.loads(request.body.decode('utf-8'))
     data = response.get('Data')
     record.index = []
-    record.index = []
+    record.type = []
     record.value = []
     for i in data:
         record.index.append(i.get('index'))
