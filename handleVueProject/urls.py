@@ -30,4 +30,5 @@ urlpatterns = [
     url(r'^downVerify1/', views.downVerify1),
     url(r'^resolveCount/', views.resolveCount),
     url(r'^responseSuccess/', views.responseSuccess),
+    url(r'^hardWare/', views.hardWare),
 ]

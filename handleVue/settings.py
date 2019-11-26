@@ -102,6 +102,7 @@ DATABASES = {
         'USER': 'root',
         'PASSWORD': 'zhangyi20120.0',
         'HOST': 'localhost',
+        # 'HOST': '172.171.1.80',
         'PORT': '3306',
         'OPTIONS': {
             "init_command": "SET foreign_key_checks = 0;",

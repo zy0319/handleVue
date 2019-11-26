@@ -12,6 +12,43 @@ ssh = paramiko.SSHClient()
 ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 
 
+# 汇总
+def config(ip, port, username, password):
+    ssh.connect(hostname=ip, port=port, username=username, password=password)
+    stdin, stdout, stderr = ssh.exec_command('cat /proc/meminfo')
+    str_out = stdout.read().decode()
+    str_total = re.search('MemTotal:.*?\n', str_out).group()
+    totalmem = re.search('\d+', str_total).group()
+    str_free = re.search('MemFree:.*?\n', str_out).group()
+    freemem = re.search('\d+', str_free).group()
+    use1 = 1 - round(float(freemem) / float(totalmem), 2)
+
+    stdin, stdout, stderr = ssh.exec_command('df -k ')
+    str_out = stdout.read().decode("utf-8")
+    s = str_out.split("\n")
+    s.pop(0)
+    s.pop(-1)
+    use = []
+    blocks = 0
+    used = 0
+    for i in s:
+        u = i.split()
+        blocks += float(u[1])
+        used += float(u[2])
+        use.append(u[4])
+    userate = used / blocks
+
+    stdin, stdout, stderr = ssh.exec_command('sar -n DEV 1 1')
+    str_out = stdout.read().decode("utf-8")
+    str_total = re.search('lo .*?\n', str_out).group(0)
+    s = str_total.split()
+    rxkb = s[3]
+    txkb = s[4]
+
+    ssh.close()
+    resp = {'memoryUtilization': use1, 'diskUtilization': userate, 'rxkb': rxkb, 'txkb': txkb}
+    return resp
+
 
 # 返回内存占用率
 def findmem():
@@ -61,6 +98,7 @@ def findsta():
         ssh.close()
     return userate
 
+
 # 返回网卡流量
 def networkFlow():
     for host in host_list:
@@ -78,7 +116,7 @@ def networkFlow():
         rxkb = s[3]
         txkb = s[4]
         ssh.close()
-        return rxkb+'='+txkb
+        return rxkb + '=' + txkb
 
 
 def DNSquery(ip, biaoshi):
@@ -135,5 +173,6 @@ def Naptrquery(ip, biaoshi):
         ssh.close()
     return datalist
 
+
 if __name__ == '__main__':
-    print networkFlow()
+    print config('172.171.1.80', 22, 'root', 'pms123handle$%^')
