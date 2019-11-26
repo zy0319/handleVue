@@ -508,7 +508,7 @@ def upload_file(request):
                             handle1 = handles.create(company=company, username=username, perix=perfix, count=0,
                                                      time=now, server=server2)
                             handle1.save()
-                            createh(record, perfix)
+                            createh(record, perfix,server2.ip,server2.port)
                             succeedcreate = succeedcreate.append(correct)
                         if correct.shape[0] != b.shape[0]:
                             errortype = b[b['index'].str.match('^[1-9]\d*$') == False]
