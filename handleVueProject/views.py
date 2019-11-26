@@ -720,14 +720,13 @@ def DelHandle(request):
 def creatCount(request):
     response = ujson.loads(request.body.decode('utf-8'))
     id = response.get('id')
-    server1 = server.objects.get(id=id)
     now = django.utils.timezone.datetime.now()
     start = now - relativedelta(days=12)
     print now
     print start
     # 当前时间
     # 获取近一年内数据
-    data = handles.objects.filter(time__range=(start, now), ip=server1.ip)
+    data = handles.objects.filter(time__range=(start, now), server=id)
     res = data.extra(select={'year': 'year(time)', 'month': 'month(time)', 'day': 'day(time)'}).values('year', 'month',
                                                                                                        'day').annotate(
         count=Count('time')).order_by()
