@@ -125,7 +125,8 @@ def userSelect(request):
     page = data.get('pageNum')
     pageSize = data.get('pageSize')
     user1 = user.objects.filter(verify=1, username__contains=userName, company__contains=companyName, time__lte=endTime,
-                                time__gte=startTime).values('id', 'username', 'phonenumber', 'email', 'card', 'company', 'time')
+                                time__gte=startTime).values('id', 'username', 'phonenumber', 'email', 'card', 'company',
+                                                            'time')
     paginator1 = Paginator(user1, pageSize)  # 每页显示4条
     if page:
         data_list = paginator1.page(page).object_list
@@ -225,11 +226,11 @@ def alterPassword(request):
         return HttpResponse(ujson.dumps(resp, ensure_ascii=False), content_type='application/json; charset=utf-8')
 
 
-# @auth_permission_required('handleProjectVue.user')
+@auth_permission_required('handleProjectVue.user')
 def downVerify(request):
-    # data = ujson.loads(request.body.decode('utf-8'))
-    # id = data.get('id')
-    id = request.GET['id']
+    data = ujson.loads(request.body.decode('utf-8'))
+    id = data.get('id')
+    # id = request.GET['id']
     user1 = user.objects.get(id=id)
     file = open("upload/" + user1.username + '.xlsx', 'rb')
     HttpResponse = FileResponse(file)
@@ -528,9 +529,6 @@ def upload_file(request):
     return response
 
 
-
-
-
 @auth_permission_required('handleProjectVue.user')
 def OneQuery(request):
     data = ujson.loads(request.body.decode('utf-8'))
@@ -714,23 +712,23 @@ def DelHandle(request):
     return HttpResponse(ujson.dumps(resp))
 
 
-@auth_permission_required('handleProjectVue.user')  # 注册量
+# @auth_permission_required('handleProjectVue.user')  # 注册量
 def CreatCount(request):
-    data = ujson.loads(request.body.decode('utf-8'))
-    time = datetime.now() - relativedelta(years=1)
-    start = datetime.now() - relativedelta(months=12)
+    now = django.utils.timezone.datetime.now()
+    start = now - relativedelta(days=12)
+    print now
+    print start
     # 当前时间
-    now = datetime.now()
     # 获取近一年内数据
     data = handles.objects.filter(time__range=(start, now))
-    res = data.extra(select={'year': 'year(time)', 'month': 'month(time)'}).values('year', 'month').annotate(
+    res = data.extra(select={'year': 'year(time)', 'month': 'month(time)', 'day': 'day(time)'}).values('year', 'month',
+                                                                                                       'day').annotate(
         count=Count('time')).order_by()
     print res
     res_data = []
     for item in res:
         res_data.append({
-            'year': item.get('year'),
-            'month': item.get('month'),
+            'time': str(item.get('year')) + "-" + str(item.get('month')) + "-" + str(item.get('day')),
             'count': item.get('count')
         })
     print res_data
@@ -738,7 +736,38 @@ def CreatCount(request):
     return HttpResponse(ujson.dumps(resp))
 
 
+def resolveCount(request):
+    now = django.utils.timezone.datetime.now()
+    start = now - relativedelta(days=12)
+    # 当前时间
+    # 获取近一年内数据
+    data = resolveRecord.objects.filter(time__range=(start, now))
+    res = data.extra(select={'year': 'year(time)', 'month': 'month(time)', 'day': 'day(time)'}).values('year', 'month',
+                                                                                                       'day').annotate(
+        count=Count('time')).order_by()
+    print res
+    res_data = []
+    for item in res:
+        res_data.append({
+            'time': str(item.get('year')) + "-" + str(item.get('month')) + "-" + str(item.get('day')),
+            'count': item.get('count')
+        })
+
+    print res_data
+    resp = {'status': 1, 'data': res_data}
+    return HttpResponse(ujson.dumps(resp))
 
 
-
-
+def responseSuccess(request):
+    now = django.utils.timezone.datetime.now()
+    start = now - relativedelta(days=7)
+    # 当前时间
+    # 获取近一年内数据
+    data = resolveRecord.objects.filter(time__range=(start, now), success=0).count()
+    data1 = resolveRecord.objects.filter(time__range=(start, now), success=1).count()
+    if data1 == 0 & data == 0:
+        resp = {'status': 0, 'data': 0}
+        return HttpResponse(ujson.dumps(resp))
+    else:
+        resp = {'status': 1, 'data': data1 / (data + data1)}
+        return HttpResponse(ujson.dumps(resp))

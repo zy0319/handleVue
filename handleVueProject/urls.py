@@ -28,4 +28,6 @@ urlpatterns = [
     url(r'^CreatCount/', views.CreatCount),
     url(r'^VisitStatus/', views.VisitStatus),
     url(r'^downVerify1/', views.downVerify1),
+    url(r'^resolveCount/', views.resolveCount),
+    url(r'^responseSuccess/', views.responseSuccess),
 ]
