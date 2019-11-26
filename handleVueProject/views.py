@@ -310,7 +310,7 @@ def analyze_json(jsons):
     return handle
 
 
-# @auth_permission_required('handleProjectVue.user')
+@auth_permission_required('handleProjectVue.user')
 def Classifiedquery(request):
     if request.method != 'POST':
         resp = {'status': 0, 'message': '请用post方法'}
@@ -318,7 +318,7 @@ def Classifiedquery(request):
     data = ujson.loads(request.body.decode('utf-8'))
     biaoshi = data.get('prefix')
     type = data.get('type')
-    handlepattern = '20.500.12410'
+    handlepattern = '20.500'
     niotpantter = 'cn.pub.xty.100'
     ecodepantter = '100036930100'
     oidpanntter = '1.2.156.86'
@@ -717,14 +717,17 @@ def DelHandle(request):
 
 
 @auth_permission_required('handleProjectVue.user')  # 注册量
-def CreatCount(request):
+def creatCount(request):
+    response = ujson.loads(request.body.decode('utf-8'))
+    id = response.get('id')
+    server1 = server.objects.get(id=id)
     now = django.utils.timezone.datetime.now()
     start = now - relativedelta(days=12)
     print now
     print start
     # 当前时间
     # 获取近一年内数据
-    data = handles.objects.filter(time__range=(start, now))
+    data = handles.objects.filter(time__range=(start, now), ip=server1.ip)
     res = data.extra(select={'year': 'year(time)', 'month': 'month(time)', 'day': 'day(time)'}).values('year', 'month',
                                                                                                        'day').annotate(
         count=Count('time')).order_by()
@@ -742,11 +745,14 @@ def CreatCount(request):
 
 @auth_permission_required('handleProjectVue.user')
 def resolveCount(request):
+    response = ujson.loads(request.body.decode('utf-8'))
+    id = response.get('id')
+    server1 = server.objects.get(id=id)
     now = django.utils.timezone.datetime.now()
     start = now - relativedelta(days=12)
     # 当前时间
     # 获取近一年内数据
-    data = resolveRecord.objects.filter(time__range=(start, now))
+    data = resolveRecord.objects.filter(time__range=(start, now), ip=server1.ip)
     res = data.extra(select={'year': 'year(time)', 'month': 'month(time)', 'day': 'day(time)'}).values('year', 'month',
                                                                                                        'day').annotate(
         count=Count('time')).order_by()
@@ -765,21 +771,27 @@ def resolveCount(request):
 
 @auth_permission_required('handleProjectVue.user')
 def responseSuccess(request):
+    response = ujson.loads(request.body.decode('utf-8'))
+    id = response.get('id')
+    server1 = server.objects.get(id=id)
     now = django.utils.timezone.datetime.now()
     start = now - relativedelta(days=7)
     # 当前时间
     # 获取近一年内数据
-    data = resolveRecord.objects.filter(time__range=(start, now), success=0).count()
-    data1 = resolveRecord.objects.filter(time__range=(start, now), success=1).count()
+    data = resolveRecord.objects.filter(time__range=(start, now), success=0, ip=server1.ip).count()
+    data1 = resolveRecord.objects.filter(time__range=(start, now), success=1, ip=server1.ip).count()
+    print data
+    print data1
     if data1 == 0 & data == 0:
         resp = {'status': 0, 'data': 0}
         return HttpResponse(ujson.dumps(resp))
     else:
-        resp = {'status': 1, 'data': data1 / (data + data1)}
+
+        resp = {'status': 1, 'data': (format(float(data1) / float(data+data1), '.2f'))}
         return HttpResponse(ujson.dumps(resp))
 
 
-# @auth_permission_required('handleProjectVue.user')
+@auth_permission_required('handleProjectVue.user')
 def hardWare(request):
     response = ujson.loads(request.body.decode('utf-8'))
     id = response.get('id')
