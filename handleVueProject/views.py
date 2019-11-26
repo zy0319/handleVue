@@ -19,6 +19,7 @@ from models import *
 from handleVueProject.pubprivkeyauth import createh, delete
 from handleVueProject.pubprivkeyauth import reslove
 from handleVueProject import serverquery
+from serverquery import config
 
 UserModel = get_user_model()
 
@@ -93,7 +94,7 @@ def register(request):
                 destination.close()
                 after = os.path.splitext(accessory.name)[1]
                 os.rename("upload/" + accessory.name, "upload/" + userName + after)
-                user1 = user.create(userName, password, userPhone, userEmail, userCardId, userName, 0, 0, now,
+                user1 = user.create(userName, password, userPhone, userEmail, userCardId, userName, 0, now,
                                     companyName)
                 user1.set_password(password)
                 user1.save()
@@ -309,7 +310,7 @@ def analyze_json(jsons):
     return handle
 
 
-@auth_permission_required('handleProjectVue.user')
+# @auth_permission_required('handleProjectVue.user')
 def Classifiedquery(request):
     if request.method != 'POST':
         resp = {'status': 0, 'message': '请用post方法'}
@@ -322,17 +323,14 @@ def Classifiedquery(request):
     ecodepantter = '100036930100'
     oidpanntter = '1.2.156.86'
     DNSpattern = '[a-zA-Z0-9][-a-zA-Z0-9]{0,62}(\.[a-zA-Z0-9][-a-zA-Z0-9]{0,62})+\.?'
+    now = django.utils.timezone.datetime.now().strftime('%Y-%m-%d')
     if type == 1 and re.search(handlepattern, biaoshi) != None:
         handleperix = biaoshi
         obj1 = handles.objects.filter(perix=handleperix)
         if obj1.exists():
             obj = handles.objects.get(perix=handleperix)
-            user2 = user.objects.get(username=obj.username)
-            newcount = user2.count + 1
-            user.objects.filter(username=obj.username).update(count=newcount)
             obj.count += 1
             obj.save()
-            user2.save()
             handle_record = reslove(handleperix, obj.server.ip, obj.server.port)
         else:
             handle_record = reslove(handleperix, ip='172.171.1.80', port=8080)
@@ -348,9 +346,19 @@ def Classifiedquery(request):
         # data.append(d1)
         if data == []:
             resp = {'status': 0, 'message': "标识不存在"}
+            resolveRecord1 = resolveRecord.create(ip='172.171.1.80', prefix=handleperix, success=0, time=now)
+            resolveRecord1.save()
             return HttpResponse(ujson.dumps(resp))
-        d1['data'] = data
-        return HttpResponse(ujson.dumps(d1))
+        else:
+            d1['data'] = data
+            if obj1.exists():
+                obj = handles.objects.get(perix=handleperix)
+                resolveRecord1 = resolveRecord.create(ip=obj.server.ip, prefix=handleperix, success=1, time=now)
+                resolveRecord1.save()
+            else:
+                resolveRecord1 = resolveRecord.create(ip='172.171.1.80', prefix=handleperix, success=1, time=now)
+                resolveRecord1.save()
+            return HttpResponse(ujson.dumps(d1))
     if type == 2:
         list1 = []
         list2 = []
@@ -364,11 +372,8 @@ def Classifiedquery(request):
                 obj = handles.objects.get(perix=perix)
                 handle_record = reslove(perix, obj.server.ip, obj.server.port)
                 handle1 = analyze_json(handle_record)
-                user2 = user.objects.get(username=handle.username)
-                user2.count += 1
                 handle.count = handle.count + 1
                 handle.save()
-                user2.save()
                 d1 = dict()
                 data = list()
                 for row in handle1.context:
@@ -662,7 +667,7 @@ def DelHandle(request):
     return HttpResponse(ujson.dumps(resp))
 
 
-# @auth_permission_required('handleProjectVue.user')  # 注册量
+@auth_permission_required('handleProjectVue.user')  # 注册量
 def CreatCount(request):
     now = django.utils.timezone.datetime.now()
     start = now - relativedelta(days=12)
@@ -686,6 +691,7 @@ def CreatCount(request):
     return HttpResponse(ujson.dumps(resp))
 
 
+@auth_permission_required('handleProjectVue.user')
 def resolveCount(request):
     now = django.utils.timezone.datetime.now()
     start = now - relativedelta(days=12)
@@ -708,6 +714,7 @@ def resolveCount(request):
     return HttpResponse(ujson.dumps(resp))
 
 
+@auth_permission_required('handleProjectVue.user')
 def responseSuccess(request):
     now = django.utils.timezone.datetime.now()
     start = now - relativedelta(days=7)
@@ -721,3 +728,13 @@ def responseSuccess(request):
     else:
         resp = {'status': 1, 'data': data1 / (data + data1)}
         return HttpResponse(ujson.dumps(resp))
+
+
+# @auth_permission_required('handleProjectVue.user')
+def hardWare(request):
+    response = ujson.loads(request.body.decode('utf-8'))
+    id = response.get('id')
+    server1 = server.objects.get(id=id)
+    data = serverquery.config(server1.ip, 22, server1.username, server1.password)
+    resp = {'status': 1, 'data': data}
+    return HttpResponse(ujson.dumps(resp))

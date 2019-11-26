@@ -14,7 +14,6 @@ class user(AbstractUser):
     card = models.CharField(max_length=64)
     filepath = models.CharField(max_length=256)
     verify = models.IntegerField(max_length=1)
-    count = models.IntegerField(max_length=10)
     time = models.CharField(max_length=256)
     company = models.TextField(max_length=64)
 
@@ -22,9 +21,9 @@ class user(AbstractUser):
         db_table = 'user'
 
     @classmethod
-    def create(cls, username, password, phonenumber, email, card, filepath, verify, count, time, companyname):
+    def create(cls, username, password, phonenumber, email, card, filepath, verify, time, companyname):
         user1 = cls(username=username, password=password, phonenumber=phonenumber, email=email, card=card,
-                    filepath=filepath, verify=verify, count=count, time=time, company=companyname, is_staff=1, is_superuser=0)
+                    filepath=filepath, verify=verify, time=time, company=companyname, is_staff=1, is_superuser=0)
         return user1
 
     def __str__(self):  # __unicode__ on Python 2
@@ -74,7 +73,6 @@ class server(models.Model):
 class resolveRecord(models.Model):
     ip = models.CharField(max_length=64)
     prefix = models.CharField(max_length=256)
-    fail = models.IntegerField(max_length=64)
     success = models.IntegerField(max_length=64)
     time = models.CharField(max_length=256)
 
@@ -82,9 +80,9 @@ class resolveRecord(models.Model):
         db_table = 'resolveRecord'
 
     @classmethod
-    def create(cls, ip, prefix, fail, success, time):
-        resolveRecord = cls(id=id, ip=ip, prefix=prefix, fail=fail, success=success,time=time)
-        return resolveRecord
+    def create(cls, ip, prefix, success, time):
+        resolveRecord1 = cls(ip=ip, prefix=prefix, success=success, time=time)
+        return resolveRecord1
 
     def __str__(self):  # __unicode__ on Python 2
         return self.prefix

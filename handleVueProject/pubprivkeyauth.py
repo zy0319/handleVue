@@ -72,6 +72,7 @@ def get_handle_record(handle, ip, port):
     url = 'https://' + ip + ':' + str(port) + '/api/handles/' + handle
     # Turn off certificate verification as most handle servers have self-signed certificates
     r = requests.get(url, verify=False)
+    # handle_record = r.json()
     if r.status_code == 200:
         handle_record = r.json()
     else:
