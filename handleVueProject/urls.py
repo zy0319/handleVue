@@ -26,5 +26,6 @@ urlpatterns = [
     url(r'^UpdateServer/', views.UpdateServer),
     url(r'^DelHandle/', views.DelHandle),
     url(r'^CreatCount/', views.CreatCount),
+    url(r'^VisitStatus/', views.VisitStatus),
     url(r'^downVerify1/', views.downVerify1),
 ]

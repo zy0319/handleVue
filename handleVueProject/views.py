@@ -451,7 +451,7 @@ def upload_file(request):
         now = django.utils.timezone.datetime.now().strftime('%Y-%m-%d')
         uploadedFile = request.FILES.get('file', None)
         wb = xlrd.open_workbook(filename=uploadedFile.name, file_contents=request.FILES['file'].read())
-        current_date = datetime.datetime.now()
+        current_date = datetime.now()
         current_date_format = unicode(current_date.strftime('%Y-%m-%d %H-%M-%S'))
         destination = open(
             os.path.join("uploadexcel/" + current_date_format + "_" + username + "_" + uploadedFile.name),
@@ -518,8 +518,8 @@ def upload_file(request):
             error[u'没有获得正确的列名'] = ''
     filename = "result.xlsx"
     writer = pd.ExcelWriter("uploadexcel/" + username + "_" + filename)
-    error.to_excel(writer, sheet_name='错误')
-    succeedcreate.to_excel(writer, sheet_name='成功')
+    error.to_excel(writer, sheet_name='ERROR')
+    succeedcreate.to_excel(writer, sheet_name='SUCCESS')
     writer.save()
     file = open("uploadexcel/" + username + "_" + filename, 'rb')
     response = FileResponse(file)
@@ -562,7 +562,7 @@ def OneQuery(request):
 def ManyQuery(request):
     data = ujson.loads(request.body.decode('utf-8'))
     page = data.get('pageNum')  # 必须
-    pageSize = data.get('pageSize')  # 必须 book_list = book.objects.filter(date__range=(date_from, date_to))
+    pageSize = data.get('pageSize')  # 必须_
     userid = data.get('userid')  # 必须
     user1 = user.objects.get(id=userid)
     companyname = ""
@@ -605,6 +605,56 @@ def ManyQuery(request):
             data_list = paginator.page(1).object_list
         resp = {'data': data_list, 'totalCount': paginator.count}
         return HttpResponse(ujson.dumps(resp))
+
+
+@auth_permission_required('handleProjectVue.user')  # 查询次数
+def VisitStatus(request):
+    data = ujson.loads(request.body.decode('utf-8'))
+    page = data.get('pageNum')  # 必须
+    pageSize = data.get('pageSize')  # 必须
+    userid = data.get('userid')  # 必须
+    user1 = user.objects.get(id=userid)
+    companyname = ""
+    startTime = "1979-09-09"
+    endTime = "2999-09-09"
+    creatname = ""
+    prefix = ""
+    if data.get('companyName'):
+        companyname = data.get('companyname')
+    if data.get('prefix'):
+        prefix = data.get('prefix')
+    if data.get('creatname'):
+        creatname = data.get('creatname')
+    if data.get('startTime'):
+        startTime = data.get('startTime')
+    if data.get('endTime'):
+        endTime = data.get('endTime')
+    if user1.verify == 2:
+        handles1 = handles.objects.filter(username__contains=creatname, perix__contains=prefix,
+                                          company__contains=companyname,
+                                          time__lte=endTime, time__gte=startTime).values('id', 'username', 'perix',
+                                                                                         'time', 'company', 'server_id','count')
+        paginator = Paginator(handles1, pageSize)
+        if page:
+            data_list = paginator.page(page).object_list
+        else:
+            data_list = paginator.page(1).object_list
+
+        resp = {'data': data_list, 'totalCount': paginator.count}
+        return HttpResponse(ujson.dumps(resp))
+    if user1.verify == 1:
+        handles1 = handles.objects.filter(username=user1.username, perix__contains=prefix,
+                                          company__contains=companyname,
+                                          time__lte=endTime, time__gte=startTime).values('id', 'username', 'perix',
+                                                                                         'time', 'company', 'server_id','count')
+        paginator = Paginator(handles1, pageSize)
+        if page:
+            data_list = paginator.page(page).object_list
+        else:
+            data_list = paginator.page(1).object_list
+        resp = {'data': data_list, 'totalCount': paginator.count}
+        return HttpResponse(ujson.dumps(resp))
+
 
 
 @auth_permission_required('handleProjectVue.user')  # 修改handle数据
