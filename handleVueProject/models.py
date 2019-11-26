@@ -63,8 +63,8 @@ class server(models.Model):
     password = models.CharField(max_length=256, null=True)
 
     @classmethod
-    def create(cls, ip, username, password):
-        server1 = cls(id=id, ip=ip, username=username, password=password)
+    def create(cls, ip, username, password, prefix):
+        server1 = cls(id=id, ip=ip, prefix=prefix, username=username, password=password)
         return server1
 
     def __str__(self):  # __unicode__ on Python 2
