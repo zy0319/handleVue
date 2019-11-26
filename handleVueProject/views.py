@@ -317,7 +317,7 @@ def Classifiedquery(request):
     data = ujson.loads(request.body.decode('utf-8'))
     biaoshi = data.get('prefix')
     type = data.get('type')
-    handlepattern = '20.500.12410'
+    handlepattern = '20.500.'
     niotpantter = 'cn.pub.xty.100'
     ecodepantter = '100036930100'
     oidpanntter = '1.2.156.86'
