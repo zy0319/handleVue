@@ -457,7 +457,7 @@ def upload_file(request):
         now = django.utils.timezone.datetime.now().strftime('%Y-%m-%d')
         uploadedFile = request.FILES.get('file', None)
         wb = xlrd.open_workbook(filename=uploadedFile.name, file_contents=request.FILES['file'].read())
-        current_date = datetime.datetime.now()
+        current_date = datetime.now()
         current_date_format = unicode(current_date.strftime('%Y-%m-%d %H-%M-%S'))
         destination = open(
             os.path.join("uploadexcel/" + current_date_format + "_" + username + "_" + uploadedFile.name),
@@ -468,9 +468,9 @@ def upload_file(request):
         succeedcreate = pd.DataFrame()
         error = pd.DataFrame()
         df = pd.read_excel(wb)
-        if {'前缀', 'index', 'type', 'data'} <= set(list(df)):
-            select_df = df[['前缀', 'index', 'type', 'data']]
-            df2 = select_df.sort_values(by="前缀")
+        if {'prefix', 'index', 'type', 'data'} <= set(list(df)):
+            select_df = df[['prefix', 'index', 'type', 'data']]
+            df2 = select_df.sort_values(by="prefix")
             # 存在空白单元格处理
             havenul = df2[df2.isnull().T.any()]
             havenul['error'] = ('have  null')
@@ -487,7 +487,7 @@ def upload_file(request):
             same_df['error'] = ('have same vlue , system have creat once succeed you don not neet to creat again')
             error = error.append(same_df)
             nosame_df = no_index100.drop_duplicates()
-            group1 = nosame_df.groupby(nosame_df['前缀'])
+            group1 = nosame_df.groupby(nosame_df['prefix'])
             # 创建一个空的Dataframe
             errorprefix = pd.DataFrame()
             for a, b in group1:
@@ -513,7 +513,7 @@ def upload_file(request):
                             handle1 = handles.create(company=company, username=username, perix=perfix, count=0,
                                                      time=now, server=server2)
                             handle1.save()
-                            createh(record, perfix)
+                            createh(record, perfix,server2.ip,server2.port)
                             succeedcreate = succeedcreate.append(correct)
                         if correct.shape[0] != b.shape[0]:
                             errortype = b[b['index'].str.match('^[1-9]\d*$') == False]
@@ -524,8 +524,8 @@ def upload_file(request):
             error[u'没有获得正确的列名'] = ''
     filename = "result.xlsx"
     writer = pd.ExcelWriter("uploadexcel/" + username + "_" + filename)
-    error.to_excel(writer, sheet_name='错误')
-    succeedcreate.to_excel(writer, sheet_name='成功')
+    error.to_excel(writer, sheet_name='ERROR')
+    succeedcreate.to_excel(writer, sheet_name='SUCCESS')
     writer.save()
     file = open("uploadexcel/" + username + "_" + filename, 'rb')
     response = FileResponse(file)
@@ -542,8 +542,6 @@ def OneQuery(request):
     handle_record = reslove(perix, handle1.server.ip, handle1.server.port)
     handle1 = None
     handle1 = analyze_json(handle_record)
-    print handle1
-    handle1.context.pop()
     for i in range(len(handle1.context)):
         handle1.context[i].pop('timestamp')
     if handle_record is not None:
@@ -552,8 +550,9 @@ def OneQuery(request):
         data = list()
         i = 0
         for row in handle1.context:
-            i = i + 1
-            data.append(row)
+              if row.get('index') is not 100:
+                i = i + 1
+                data.append(row)
         if data == []:
             resp = {'status': 0, 'message': "标识不存在"}
             return HttpResponse(ujson.dumps(resp))
@@ -565,7 +564,7 @@ def OneQuery(request):
 def ManyQuery(request):
     data = ujson.loads(request.body.decode('utf-8'))
     page = data.get('pageNum')  # 必须
-    pageSize = data.get('pageSize')  # 必须 book_list = book.objects.filter(date__range=(date_from, date_to))
+    pageSize = data.get('pageSize')  # 必须_
     userid = data.get('userid')  # 必须
     user1 = user.objects.get(id=userid)
     companyname = ""
@@ -608,6 +607,56 @@ def ManyQuery(request):
             data_list = paginator.page(1).object_list
         resp = {'data': data_list, 'totalCount': paginator.count}
         return HttpResponse(ujson.dumps(resp))
+
+
+@auth_permission_required('handleProjectVue.user')  # 查询次数
+def VisitStatus(request):
+    data = ujson.loads(request.body.decode('utf-8'))
+    page = data.get('pageNum')  # 必须
+    pageSize = data.get('pageSize')  # 必须
+    userid = data.get('userid')  # 必须
+    user1 = user.objects.get(id=userid)
+    companyname = ""
+    startTime = "1979-09-09"
+    endTime = "2999-09-09"
+    creatname = ""
+    prefix = ""
+    if data.get('companyName'):
+        companyname = data.get('companyname')
+    if data.get('prefix'):
+        prefix = data.get('prefix')
+    if data.get('creatname'):
+        creatname = data.get('creatname')
+    if data.get('startTime'):
+        startTime = data.get('startTime')
+    if data.get('endTime'):
+        endTime = data.get('endTime')
+    if user1.verify == 2:
+        handles1 = handles.objects.filter(username__contains=creatname, perix__contains=prefix,
+                                          company__contains=companyname,
+                                          time__lte=endTime, time__gte=startTime).values('id', 'username', 'perix',
+                                                                                         'time', 'company', 'server_id','count')
+        paginator = Paginator(handles1, pageSize)
+        if page:
+            data_list = paginator.page(page).object_list
+        else:
+            data_list = paginator.page(1).object_list
+
+        resp = {'data': data_list, 'totalCount': paginator.count}
+        return HttpResponse(ujson.dumps(resp))
+    if user1.verify == 1:
+        handles1 = handles.objects.filter(username=user1.username, perix__contains=prefix,
+                                          company__contains=companyname,
+                                          time__lte=endTime, time__gte=startTime).values('id', 'username', 'perix',
+                                                                                         'time', 'company', 'server_id','count')
+        paginator = Paginator(handles1, pageSize)
+        if page:
+            data_list = paginator.page(page).object_list
+        else:
+            data_list = paginator.page(1).object_list
+        resp = {'data': data_list, 'totalCount': paginator.count}
+        return HttpResponse(ujson.dumps(resp))
+
 
 
 @auth_permission_required('handleProjectVue.user')  # 修改handle数据
