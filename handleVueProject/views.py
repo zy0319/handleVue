@@ -240,13 +240,14 @@ def downVerify(request):
     return HttpResponse
 
 
-@auth_permission_required('handleProjectVue.user')
 def downVerify1(request):
     file = open("mobanUpload/" + 'example.xlsx', 'rb')
     HttpResponse = FileResponse(file)
     HttpResponse['Content-Type'] = 'application/octet-stream'
     HttpResponse['Content-Disposition'] = 'attachment;filename="example.xlsx"'
     return HttpResponse
+
+
 
 
 @auth_permission_required('handleProjectVue.user')
