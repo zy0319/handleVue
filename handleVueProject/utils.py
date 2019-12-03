@@ -18,8 +18,13 @@ def jwt_response_payload_handler(token, user=None, request=None):
             "prefix": user.id,
             "role": user.verify
         }
+    elif user.verify == 0:
+        return {
+            "status": 2,
+            "message": " 用户在审核中，登录认证失败"
+        }
     else:
         return {
             "status": 0,
-            "message": "未通过审核"
+            "message": " 用户审核被拒，登录认证失败"
         }

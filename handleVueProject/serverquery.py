@@ -175,4 +175,12 @@ def Naptrquery(ip, biaoshi):
 
 
 if __name__ == '__main__':
-    print config('172.171.1.80', 22, 'root', 'pms123handle$%^')
+    a = 1
+    b = 3
+    print(a / b)
+    # 方法一：
+    print(round(a / b, 2))
+    # 方法二：
+    print(format(float(a) / float(b), '.2f'))
+    # 方法三：
+    print ('%.2f' % (a / b))

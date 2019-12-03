@@ -101,6 +101,7 @@ DATABASES = {
         'NAME': 'handleVue',
         'USER': 'root',
         'PASSWORD': 'zhangyi20120.0',
+        # 'PASSWORD': '123456',
         'HOST': 'localhost',
         # 'HOST': '172.171.1.80',
         'PORT': '3306',
