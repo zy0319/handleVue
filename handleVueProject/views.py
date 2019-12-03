@@ -255,7 +255,7 @@ def ServerList(request):
     return HttpResponse(ujson.dumps(resp))
 
 
-# @auth_permission_required('handleProjectVue.user')
+@auth_permission_required('handleProjectVue.user')
 def CreateHandle(request):
     response = ujson.loads(request.body.decode('utf-8'))
     data = response.get('Data')
