@@ -387,6 +387,9 @@ def Classifiedquery(request):
             reback['type'] = 'handle'
             reback['result'] = result
             return HttpResponse(ujson.dumps(reback))
+        if len(handlelist) > 5000:
+            resp = {'status': 0, 'message': "匹配标识过多"}
+            return HttpResponse(ujson.dumps(resp))
     if (re.search(niotpantter, biaoshi) != None):
         datalist = serverquery.Naptrquery('172.171.1.80', biaoshi)
         if datalist == {}:
