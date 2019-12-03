@@ -388,6 +388,9 @@ def Classifiedquery(request):
             reback['type'] = 'handle'
             reback['result'] = result
             return HttpResponse(ujson.dumps(reback))
+        if len(handlelist) > 5000:
+            resp = {'status': 0, 'message': "匹配标识过多"}
+            return HttpResponse(ujson.dumps(resp))
     if (re.search(niotpantter, biaoshi) != None):
         datalist = serverquery.Naptrquery('172.171.1.80', biaoshi)
         if datalist == {}:
@@ -478,7 +481,7 @@ def upload_file(request):
             nonan_df = df2.dropna(axis=0, how='any')
             # index为100
             index100 = nonan_df[nonan_df['index'].isin([100])]
-            index100['error'] = 'index 100 invlued'
+            index100['error'] = 'index 100 invalid'
             error = error.append(index100)
             no_index100 = nonan_df[~nonan_df['index'].isin([100])]
 
