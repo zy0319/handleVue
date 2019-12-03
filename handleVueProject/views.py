@@ -255,7 +255,7 @@ def ServerList(request):
     return HttpResponse(ujson.dumps(resp))
 
 
-@auth_permission_required('handleProjectVue.user')
+# @auth_permission_required('handleProjectVue.user')
 def CreateHandle(request):
     response = ujson.loads(request.body.decode('utf-8'))
     data = response.get('Data')
@@ -268,7 +268,8 @@ def CreateHandle(request):
         record.value.append(i.get('data'))
     perfix = response.get('prefix')
     handle_record = reslove(perfix, ip='172.171.1.80', port=8080)
-    if handle_record is not None:
+    handle1 = handles.objects.filter(perix=perfix)
+    if handle_record is not None or handle1.exists():
         resp = {'status': 0, 'message': '该前缀已经存在'}
         return HttpResponse(ujson.dumps(resp))
     now = django.utils.timezone.datetime.now().strftime('%Y-%m-%d')
@@ -309,7 +310,6 @@ def analyze_json(jsons):
     return handle
 
 
-@auth_permission_required('handleProjectVue.user')
 def Classifiedquery(request):
     if request.method != 'POST':
         resp = {'status': 0, 'message': '请用post方法'}
@@ -323,7 +323,7 @@ def Classifiedquery(request):
     oidpanntter = '1.2.156.86'
     DNSpattern = '[a-zA-Z0-9][-a-zA-Z0-9]{0,62}(\.[a-zA-Z0-9][-a-zA-Z0-9]{0,62})+\.?'
     now = django.utils.timezone.datetime.now().strftime('%Y-%m-%d')
-    if type == 1 and re.search(handlepattern, biaoshi) != None:
+    if type==1 and re.search(handlepattern, biaoshi):
         handleperix = biaoshi
         obj1 = handles.objects.filter(perix=handleperix)
         if obj1.exists():
@@ -477,7 +477,7 @@ def upload_file(request):
             nonan_df = df2.dropna(axis=0, how='any')
             # index为100
             index100 = nonan_df[nonan_df['index'].isin([100])]
-            index100['error'] = 'index 100 invlued'
+            index100['error'] = 'index 100 invalid'
             error = error.append(index100)
             no_index100 = nonan_df[~nonan_df['index'].isin([100])]
 
@@ -512,7 +512,7 @@ def upload_file(request):
                             handle1 = handles.create(company=company, username=username, perix=perfix, count=0,
                                                      time=now, server=server2)
                             handle1.save()
-                            createh(record, perfix,server2.ip,server2.port)
+                            createh(record, perfix, server2.ip)
                             succeedcreate = succeedcreate.append(correct)
                         if correct.shape[0] != b.shape[0]:
                             errortype = b[b['index'].str.match('^[1-9]\d*$') == False]
@@ -571,12 +571,12 @@ def ManyQuery(request):
     endTime = "2999-09-09"
     creatname = ""
     prefix = ""
-    if data.get('companyName'):
+    if data.get('companyname'):
         companyname = data.get('companyname')
     if data.get('prefix'):
         prefix = data.get('prefix')
-    if data.get('creatname'):
-        creatname = data.get('creatname')
+    if data.get('createname'):
+        creatname = data.get('createname')
     if data.get('startTime'):
         startTime = data.get('startTime')
     if data.get('endTime'):
@@ -620,12 +620,12 @@ def VisitStatus(request):
     endTime = "2999-09-09"
     creatname = ""
     prefix = ""
-    if data.get('companyName'):
+    if data.get('companyname'):
         companyname = data.get('companyname')
     if data.get('prefix'):
         prefix = data.get('prefix')
-    if data.get('creatname'):
-        creatname = data.get('creatname')
+    if data.get('createname'):
+        creatname = data.get('createname')
     if data.get('startTime'):
         startTime = data.get('startTime')
     if data.get('endTime'):
