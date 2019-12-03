@@ -248,8 +248,6 @@ def downVerify1(request):
     return HttpResponse
 
 
-
-
 @auth_permission_required('handleProjectVue.user')
 def ServerList(request):
     serverlist = server.objects.values('id', 'ip', 'port', 'prefix')
@@ -282,7 +280,7 @@ def CreateHandle(request):
     server2 = server.objects.get(id=serverid)
     handle1 = handles.create(company=company, username=username, perix=perfix, count=0, time=now, server=server2)
     handle1.save()
-    createh(record, perfix, server2.ip, server2.port)
+    createh(record, perfix, server2.ip)
     resp = {'status': 1, 'message': '创建成功'}
     return HttpResponse(ujson.dumps(resp), content_type='application/json; charset=utf-8')
 
@@ -458,7 +456,7 @@ def upload_file(request):
         now = django.utils.timezone.datetime.now().strftime('%Y-%m-%d')
         uploadedFile = request.FILES.get('file', None)
         wb = xlrd.open_workbook(filename=uploadedFile.name, file_contents=request.FILES['file'].read())
-        current_date = datetime.now()
+        current_date = django.utils.timezone.datetime.now()
         current_date_format = unicode(current_date.strftime('%Y-%m-%d %H-%M-%S'))
         destination = open(
             os.path.join("uploadexcel/" + current_date_format + "_" + username + "_" + uploadedFile.name),
@@ -673,8 +671,8 @@ def UpdatehHandle(request):
         record.index.append(i.get('index'))
         record.type.append(i.get('type'))
         record.value.append(i.get('data'))
-    delete(perfix, handle1.server.ip, handle1.server.port)
-    createh(record, perfix, handle1.server.ip, handle1.server.port)
+    delete(perfix, handle1.server.ip)
+    createh(record, perfix, handle1.server.ip)
     resp = {'status': 1, 'message': "修改成功"}
     return HttpResponse(ujson.dumps(resp))
 
@@ -698,10 +696,10 @@ def UpdateServer(request):
         record.type.append(handle1.context[i].get('type'))
         record.value.append(handle1.context[i].get('datas'))
     print record.value
-    delete(prefix, handle.server.ip, handle.server.port)
+    delete(prefix, handle.server.ip)
     server2 = server.objects.get(id=serverid)
     handles.objects.filter(perix=prefix).update(server=server2)
-    createh(record, prefix, server2.ip, server2.port)
+    createh(record, prefix, server2.ip)
     resp = {'status': 1, 'message': "修改成功"}
     return HttpResponse(ujson.dumps(resp))
 
@@ -711,7 +709,7 @@ def DelHandle(request):
     response = ujson.loads(request.body.decode('utf-8'))
     perfix = response.get('prefix')
     handle1 = handles.objects.get(perix=perfix)
-    delete(perfix, handle1.server.ip, handle1.server.port)
+    delete(perfix, handle1.server.ip)
     handle1 = handles.objects.filter(perix=perfix).delete()
     resp = {'status': 1, 'message': "删除成功"}
     return HttpResponse(ujson.dumps(resp))
