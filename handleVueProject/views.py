@@ -262,10 +262,20 @@ def CreateHandle(request):
     record.index = []
     record.type = []
     record.value = []
+    errortype = ['HS_ADMIN', 'HS_SITE', 'HS_NA_DELEGATE', 'HS_SERV', 'HS_ALIAS', 'HS_PRIMARY', 'HS_VLIST']
     for i in data:
         record.index.append(i.get('index'))
         record.type.append(i.get('type'))
         record.value.append(i.get('data'))
+        if (i.get('type') in errortype):
+            resp = {'status': 0, 'message': 'type 值错误'}
+            return HttpResponse(ujson.dumps(resp))
+        if (i.get('index') in record.index):
+            resp = {'status': 0, 'message': 'index 重复'}
+            return HttpResponse(ujson.dumps(resp))
+        if (i.get('index') == '100'):
+            resp = {'status': 0, 'message': 'index 值错误'}
+            return HttpResponse(ujson.dumps(resp))
     perfix = response.get('prefix')
     handle_record = reslove(perfix, ip='172.171.1.80', port=8080)
     handle1 = handles.objects.filter(perix=perfix)
@@ -364,6 +374,9 @@ def Classifiedquery(request):
         count = handles.objects.filter(perix__startswith=biaoshi).count()
         handlelist = list(handles.objects.filter(perix__startswith=biaoshi))
         result = []
+        if len(handlelist) > 5000:
+            resp = {'status': 0, 'message': "匹配标识过多"}
+            return HttpResponse(ujson.dumps(resp))
         if len(handlelist) != 0:
             for i in range(0, count):
                 handle = handlelist[i]
@@ -387,9 +400,7 @@ def Classifiedquery(request):
             reback['type'] = 'handle'
             reback['result'] = result
             return HttpResponse(ujson.dumps(reback))
-        if len(handlelist) > 5000:
-            resp = {'status': 0, 'message': "匹配标识过多"}
-            return HttpResponse(ujson.dumps(resp))
+
     if (re.search(niotpantter, biaoshi) != None):
         datalist = serverquery.Naptrquery('172.171.1.80', biaoshi)
         if datalist == {}:
@@ -484,11 +495,18 @@ def upload_file(request):
             error = error.append(index100)
             no_index100 = nonan_df[~nonan_df['index'].isin([100])]
 
+            # 处理type类型错误
+            errortype = ['HS_ADMIN', 'HS_SITE', 'HS_NA_DELEGATE', 'HS_SERV', 'HS_ALIAS', 'HS_PRIMARY', 'HS_VLIST']
+            typeerror = no_index100[no_index100['type'].isin(errortype)]
+            typeerror['error'] = 'type value have error '
+            error = error.append(typeerror)
+            typetrue = no_index100[~no_index100['type'].isin(errortype)]
+
             # 处理数据相同行
-            same_df = no_index100[no_index100.duplicated()]
+            same_df = typetrue[typetrue.duplicated()]
             same_df['error'] = ('have same vlue , system have creat once succeed you don not neet to creat again')
             error = error.append(same_df)
-            nosame_df = no_index100.drop_duplicates()
+            nosame_df = typetrue.drop_duplicates()
             group1 = nosame_df.groupby(nosame_df['prefix'])
             # 创建一个空的Dataframe
             errorprefix = pd.DataFrame()
@@ -670,10 +688,20 @@ def UpdatehHandle(request):
     record.index = []
     record.type = []
     record.value = []
+    errortype = ['HS_ADMIN', 'HS_SITE', 'HS_NA_DELEGATE', 'HS_SERV', 'HS_ALIAS', 'HS_PRIMARY', 'HS_VLIST']
     for i in data:
         record.index.append(i.get('index'))
         record.type.append(i.get('type'))
         record.value.append(i.get('data'))
+        if (i.get('type') in errortype):
+            resp = {'status': 0, 'message': 'type 值错误'}
+            return HttpResponse(ujson.dumps(resp))
+        if (i.get('index') in record.index):
+            resp = {'status': 0, 'message': 'index 重复'}
+            return HttpResponse(ujson.dumps(resp))
+        if (i.get('index') == '100'):
+            resp = {'status': 0, 'message': 'index 值错误'}
+            return HttpResponse(ujson.dumps(resp))
     delete(perfix, handle1.server.ip)
     createh(record, perfix, handle1.server.ip)
     resp = {'status': 1, 'message': "修改成功"}
