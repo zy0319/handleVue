@@ -127,7 +127,7 @@ def userSelect(request):
     pageSize = data.get('pageSize')
     user1 = user.objects.filter(verify=1, username__contains=userName, company__contains=companyName, time__lte=endTime,
                                 time__gte=startTime).values('id', 'username', 'phonenumber', 'email', 'card', 'company',
-                                                            'time')
+                                                            'time').order_by('-time')
     paginator1 = Paginator(user1, pageSize)  # 每页显示4条
     if page:
         data_list = paginator1.page(page).object_list
@@ -181,7 +181,7 @@ def userVerify(request):
     user1 = user.objects.filter(verify__in=[0, 3], username__contains=userName, company__contains=companyName,
                                 time__lte=endTime, time__gte=startTime).values('id', 'username', 'phonenumber', 'email',
                                                                                'card', 'company',
-                                                                               'verify', 'time')
+                                                                               'verify', 'time').order_by('-time')
     paginator1 = Paginator(user1, pageSize)  # 每页显示4条
     if page:
         data_list = paginator1.page(page).object_list
@@ -606,7 +606,7 @@ def ManyQuery(request):
         handles1 = handles.objects.filter(username__contains=creatname, perix__contains=prefix,
                                           company__contains=companyname,
                                           time__lte=endTime, time__gte=startTime).values('id', 'username', 'perix',
-                                                                                         'time', 'company', 'server_id')
+                                                                                         'time', 'company', 'server_id').order_by('-time')
         paginator = Paginator(handles1, pageSize)
         if page:
             data_list = paginator.page(page).object_list
@@ -619,7 +619,7 @@ def ManyQuery(request):
         handles1 = handles.objects.filter(username=user1.username, perix__contains=prefix,
                                           company__contains=companyname,
                                           time__lte=endTime, time__gte=startTime).values('id', 'username', 'perix',
-                                                                                         'time', 'company', 'server_id')
+                                                                                         'time', 'company', 'server_id').order_by('-time')
         paginator = Paginator(handles1, pageSize)
         if page:
             data_list = paginator.page(page).object_list
@@ -655,7 +655,7 @@ def VisitStatus(request):
         handles1 = handles.objects.filter(username__contains=creatname, perix__contains=prefix,
                                           company__contains=companyname,
                                           time__lte=endTime, time__gte=startTime).values('id', 'username', 'perix',
-                                                                                         'time', 'company', 'server_id','count')
+                                                                                         'time', 'company', 'server_id', 'count').order_by('-time')
         paginator = Paginator(handles1, pageSize)
         if page:
             data_list = paginator.page(page).object_list
@@ -668,7 +668,7 @@ def VisitStatus(request):
         handles1 = handles.objects.filter(username=user1.username, perix__contains=prefix,
                                           company__contains=companyname,
                                           time__lte=endTime, time__gte=startTime).values('id', 'username', 'perix',
-                                                                                         'time', 'company', 'server_id','count')
+                                                                                         'time', 'company', 'server_id','count').order_by('-time')
         paginator = Paginator(handles1, pageSize)
         if page:
             data_list = paginator.page(page).object_list
@@ -798,7 +798,7 @@ def resolveCount(request):
     return HttpResponse(ujson.dumps(resp))
 
 
-# @auth_permission_required('handleProjectVue.user')
+@auth_permission_required('handleProjectVue.user')
 def responseSuccess(request):
     response = ujson.loads(request.body.decode('utf-8'))
     id = response.get('id')

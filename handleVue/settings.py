@@ -98,7 +98,7 @@ WSGI_APPLICATION = 'handleVue.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'handleVue',
+        'NAME': 'handleVueTest',
         'USER': 'root',
         # 'PASSWORD': 'zhangyi20120.0',
         'PASSWORD': '123456',
