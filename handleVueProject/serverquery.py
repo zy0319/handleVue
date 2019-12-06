@@ -12,6 +12,26 @@ ssh = paramiko.SSHClient()
 ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 
 
+def sftpFile(ip, port, username, password, local_file, remote_file):
+    ssh.connect(hostname=ip, port=port, username=username, password=password)
+    sftp = ssh.open_sftp()
+    destination = sftp.open(remote_file, 'wb')
+    for chunk in local_file.chunks():  # 分块写入文件
+        destination.write(chunk)
+    destination.close()
+    # sftp.put(local_file, remote_file)
+
+
+def downFile(ip, port, username, password, remote_file):
+    ssh.connect(hostname=ip, port=port, username=username, password=password)
+    sftp = ssh.open_sftp()
+    return sftp.open(remote_file, 'rb')
+
+def removeFile(ip, port, username, password, file):
+    ssh.connect(hostname=ip, port=port, username=username, password=password)
+    ssh.exec_command('rm -rf /home/fnii/registerFile/'+file)
+
+
 # 汇总
 def config(ip, port, username, password):
     ssh.connect(hostname=ip, port=port, username=username, password=password)

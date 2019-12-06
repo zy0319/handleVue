@@ -19,7 +19,7 @@ from models import *
 from handleVueProject.pubprivkeyauth import createh, delete
 from handleVueProject.pubprivkeyauth import reslove
 from handleVueProject import serverquery
-from serverquery import config
+from serverquery import sftpFile, downFile, removeFile
 
 UserModel = get_user_model()
 
@@ -88,12 +88,16 @@ def register(request):
         else:
             accessory = request.FILES.get("file")
             if accessory != None:
-                destination = open("upload/" + accessory.name, 'wb')
-                for chunk in accessory.chunks():  # 分块写入文件
-                    destination.write(chunk)
-                destination.close()
+                # destination = open("upload/" + accessory.name, 'wb')
+                # for chunk in accessory.chunks():  # 分块写入文件
+                #     destination.write(chunk)
+                # destination.close()
                 after = os.path.splitext(accessory.name)[1]
-                os.rename("upload/" + accessory.name, "upload/" + userName + after)
+                path = os.path.join('/home/fnii/registerFile', userName+after)
+                # path1 = os.path.join('upload/'+accessory.name)
+                # print path1
+                # os.rename("upload/" + accessory.name, "upload/" + userName + after)
+                sftpFile("172.171.1.80", "22", "root", "pms123handle$%^", accessory, path)
                 user1 = user.create(userName, password, userPhone, userEmail, userCardId, userName, 0, now,
                                     companyName)
                 user1.set_password(password)
@@ -144,7 +148,8 @@ def userDelete(request):
     user1 = user.objects.get(id=id)
     username = user1.username
     user1.delete()
-    os.remove("upload/" + username + '.xlsx')
+    removeFile("172.171.1.80", "22", "root", "pms123handle$%^", username+'.xlsx')
+    # os.remove("upload/" + username + '.xlsx')
     resp = {'status': 1, 'message': 'delete success'}
     return HttpResponse(ujson.dumps(resp), content_type='application/json; charset=utf-8')
 
@@ -233,13 +238,17 @@ def downVerify(request):
     id = data.get('id')
     # id = request.GET['id']
     user1 = user.objects.get(id=id)
-    file = open("upload/" + user1.username + '.xlsx', 'rb')
+    path = os.path.join('/home/fnii/registerFile/', user1.username + '.xlsx')
+    print path
+    file = downFile("172.171.1.80", "22", "root", "pms123handle$%^", path)
+    # file = open("upload/" + user1.username + '.xlsx', 'rb')
     HttpResponse = FileResponse(file)
     HttpResponse['Content-Type'] = 'application/octet-stream'
     HttpResponse['Content-Disposition'] = 'attachment;filename="example.xlsx"'
     return HttpResponse
 
 
+# 下载注册模版
 def downVerify1(request):
     file = open("mobanUpload/" + 'example.xlsx', 'rb')
     HttpResponse = FileResponse(file)
