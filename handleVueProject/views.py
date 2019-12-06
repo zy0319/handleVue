@@ -264,9 +264,6 @@ def CreateHandle(request):
     record.value = []
     errortype = ['HS_ADMIN', 'HS_SITE', 'HS_NA_DELEGATE', 'HS_SERV', 'HS_ALIAS', 'HS_PRIMARY', 'HS_VLIST']
     for i in data:
-        record.index.append(i.get('index'))
-        record.type.append(i.get('type'))
-        record.value.append(i.get('data'))
         if (i.get('type') in errortype):
             resp = {'status': 0, 'message': 'type 值错误'}
             return HttpResponse(ujson.dumps(resp))
@@ -276,6 +273,9 @@ def CreateHandle(request):
         if (i.get('index') == '100'):
             resp = {'status': 0, 'message': 'index 值错误'}
             return HttpResponse(ujson.dumps(resp))
+        record.index.append(i.get('index'))
+        record.type.append(i.get('type'))
+        record.value.append(i.get('data'))
     perfix = response.get('prefix')
     handle_record = reslove(perfix, ip='172.171.1.80', port=8080)
     handle1 = handles.objects.filter(perix=perfix)
@@ -690,9 +690,6 @@ def UpdatehHandle(request):
     record.value = []
     errortype = ['HS_ADMIN', 'HS_SITE', 'HS_NA_DELEGATE', 'HS_SERV', 'HS_ALIAS', 'HS_PRIMARY', 'HS_VLIST']
     for i in data:
-        record.index.append(i.get('index'))
-        record.type.append(i.get('type'))
-        record.value.append(i.get('data'))
         if (i.get('type') in errortype):
             resp = {'status': 0, 'message': 'type 值错误'}
             return HttpResponse(ujson.dumps(resp))
@@ -702,6 +699,9 @@ def UpdatehHandle(request):
         if (i.get('index') == '100'):
             resp = {'status': 0, 'message': 'index 值错误'}
             return HttpResponse(ujson.dumps(resp))
+        record.index.append(i.get('index'))
+        record.type.append(i.get('type'))
+        record.value.append(i.get('data'))
     delete(perfix, handle1.server.ip)
     createh(record, perfix, handle1.server.ip)
     resp = {'status': 1, 'message': "修改成功"}
