@@ -770,7 +770,7 @@ def resolveCount(request):
     return HttpResponse(ujson.dumps(resp))
 
 
-@auth_permission_required('handleProjectVue.user')
+# @auth_permission_required('handleProjectVue.user')
 def responseSuccess(request):
     response = ujson.loads(request.body.decode('utf-8'))
     id = response.get('id')
@@ -781,13 +781,10 @@ def responseSuccess(request):
     # 获取近一年内数据
     data = resolveRecord.objects.filter(time__range=(start, now), success=0, ip=server1.ip).count()
     data1 = resolveRecord.objects.filter(time__range=(start, now), success=1, ip=server1.ip).count()
-    print data
-    print data1
-    if data1 == 0 & data == 0:
-        resp = {'status': 0, 'data': 0}
+    if data1 == 0 and data == 0:
+        resp = {'status': 0, 'data': 100}
         return HttpResponse(ujson.dumps(resp))
     else:
-
         resp = {'status': 1, 'data': (format(float(data1) / float(data+data1), '.2f'))}
         return HttpResponse(ujson.dumps(resp))
 

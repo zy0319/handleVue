@@ -16,7 +16,7 @@ from Crypto.Hash import SHA256
 from Crypto.Random import random
 from Crypto.Util.asn1 import DerSequence
 
-# path_to_private_key_pem_file = './handleVueProject/replpriv.pem'
+path_to_private_key_pem_file_302 = './handleVueProject/replpriv_302.pem'
 path_to_private_key_pem_file_aliyun = './handleVueProject/admpriv.pem'
 path_to_private_key_pem_file_nanJing = './handleVueProject/admprivNanJing.pem'
 admin_id_nanJing = '300:0.NA/20.500.12410'
@@ -41,6 +41,7 @@ def update(ip,prefix):
 
 def delete(prefix,ip):
     if ip == '172.171.1.80':
+
         delete_handle_record(prefix, path_to_private_key_pem_file_nanJing, admin_id_nanJing, ip, 8080)
     elif ip == '39.107.238.25':
         delete_handle_record(prefix, path_to_private_key_pem_file_aliyun, admin_id_aliyun, ip, 8000)
@@ -59,6 +60,8 @@ def createh(record, prefix, ip):
                         u'data': {u'value': {u'index': 200, u'handle': unicode(admin_id_nanJing), u'permissions': u''},
                                   u'format': u'admin'}})
         handle_record = {u'values': records, u'handle': unicode(prefix), u'responseCode': 1}
+        # create_handle_record(handle_record, prefix, path_to_private_key_pem_file_302, '302:0.NA/20.500.12410', ip=ip, port=8000)
+
         create_handle_record(handle_record, prefix, path_to_private_key_pem_file_nanJing, admin_id_nanJing, ip=ip, port=8080)
     elif ip == '39.107.238.25':
         for i in range(len(record.index)):
@@ -304,7 +307,6 @@ def parse_authenticate_header(authenticate_header):
 
 def generate_client_nonce_bytes():
     return bytearray(os.urandom(16))
-
 
 
 
