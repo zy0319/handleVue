@@ -173,6 +173,66 @@ def Naptrquery(ip, biaoshi):
         ssh.close()
     return datalist
 
+def GS1query(ip, biaoshi):
+    for host in host_list:
+        ssh.connect(hostname=host['ip'], port=host['port'], username=host['username'], password=host['password'])
+        stdin, stdout, stderr = ssh.exec_command('dig @'+ip+' '+biaoshi +'   NAPTR')
+        str_out = stdout.read().decode("utf-8")
+        str_err = stderr.read().decode("utf-8")
+        if str_err != "":
+            print(str_err)
+            continue
+        s = str_out.split("\n")
+        pattern = 'PostalCode'
+        pattern2='EnterpriseName'
+        pattern3 = 'RegisteredAddress'
+        datalist={}
+        count=0
+        for i in s:
+            count = count + 1
+            if(i==";; ANSWER SECTION:"):
+              for j in range(count, len(s)):
+                  if s[j] == ";; AUTHORITY SECTION:":
+                         break
+                  datali = s[j].split("\"")
+                  print datali
+                  for c in datali:
+                     if (re.search(pattern, c) != None ):
+                         datalist['PostalCode'] =datali[-1]
+                     if (re.search(pattern2, c) != None):
+                         datalist['EnterpriseName'] = datali[-1]
+                     if (re.search(pattern3, c) != None):
+                         datalist['RegisteredAddress'] = datali[-1]
+        ssh.close()
+        print datalist
+    return datalist
+def OIDquery(ip, biaoshi):
+    for host in host_list:
+        ssh.connect(hostname=host['ip'], port=host['port'], username=host['username'], password=host['password'])
+        stdin, stdout, stderr = ssh.exec_command('dig @'+ip+' '+biaoshi +'   NAPTR')
+        str_out = stdout.read().decode("utf-8")
+        str_err = stderr.read().decode("utf-8")
+        if str_err != "":
+            print(str_err)
+            continue
+        s = str_out.split("\n")
+        addresspattern='[a-zA-Z]+Address'
+        httppattern='http\S+'
+        datalist={}
+        count=0
+        print  str_out
+        for i in s:
+            count = count + 1
+            if(i==";; ANSWER SECTION:"):
+                for j in range(count, len(s)):
+                 print s[j]
+                 if (re.search(addresspattern, s[j]) != None and re.search(httppattern, s[j]) != None):
+                    address=re.search(addresspattern, s[j]).group(0)
+                    http = re.search(httppattern, s[j]).group(0)
+                    datalist[address]=http
+
+        ssh.close()
+    return datalist
 
 if __name__ == '__main__':
     a = 1

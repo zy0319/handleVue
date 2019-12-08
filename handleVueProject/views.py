@@ -20,6 +20,7 @@ from handleVueProject.pubprivkeyauth import createh, delete
 from handleVueProject.pubprivkeyauth import reslove
 from handleVueProject import serverquery
 from serverquery import config
+from handleVueProject.pubprivkeyauth import *
 
 UserModel = get_user_model()
 
@@ -255,46 +256,6 @@ def ServerList(request):
     return HttpResponse(ujson.dumps(resp))
 
 
-@auth_permission_required('handleProjectVue.user')
-def CreateHandle(request):
-    response = ujson.loads(request.body.decode('utf-8'))
-    data = response.get('Data')
-    record.index = []
-    record.type = []
-    record.value = []
-    errortype = ['HS_ADMIN', 'HS_SITE', 'HS_NA_DELEGATE', 'HS_SERV', 'HS_ALIAS', 'HS_PRIMARY', 'HS_VLIST']
-    for i in data:
-        if (i.get('type') in errortype):
-            resp = {'status': 0, 'message': 'type 值错误'}
-            return HttpResponse(ujson.dumps(resp))
-        if (i.get('index') in record.index):
-            resp = {'status': 0, 'message': 'index 重复'}
-            return HttpResponse(ujson.dumps(resp))
-        if (i.get('index') == '100'):
-            resp = {'status': 0, 'message': 'index 值错误'}
-            return HttpResponse(ujson.dumps(resp))
-        record.index.append(i.get('index'))
-        record.type.append(i.get('type'))
-        record.value.append(i.get('data'))
-    perfix = response.get('prefix')
-    handle_record = reslove(perfix, ip='172.171.1.80', port=8080)
-    handle1 = handles.objects.filter(perix=perfix)
-    if handle_record is not None or handle1.exists():
-        resp = {'status': 0, 'message': '该前缀已经存在'}
-        return HttpResponse(ujson.dumps(resp))
-    now = django.utils.timezone.datetime.now().strftime('%Y-%m-%d')
-    userid = response.get('userid')
-    user1 = user.objects.get(id=userid)
-    username = user1.username
-    company = user1.company
-    serverid = response.get('serverid')
-    server2 = server.objects.get(id=serverid)
-    handle1 = handles.create(company=company, username=username, perix=perfix, count=0, time=now, server=server2)
-    handle1.save()
-    createh(record, perfix, server2.ip)
-    resp = {'status': 1, 'message': '创建成功'}
-    return HttpResponse(ujson.dumps(resp), content_type='application/json; charset=utf-8')
-
 
 def analyze_json(jsons):
     handle.context = []
@@ -319,21 +280,197 @@ def analyze_json(jsons):
                     handle.context.append(dict1)
     return handle
 
+@auth_permission_required('handleProjectVue.user')
+def CreateHandle(request):
+    response = ujson.loads(request.body.decode('utf-8'))
+    data = response.get('Data')
+    record.index = []
+    record.type = []
+    record.value = []
+    errortype = ['HS_ADMIN', 'HS_SITE', 'HS_NA_DELEGATE', 'HS_SERV', 'HS_ALIAS', 'HS_PRIMARY', 'HS_VLIST']
+    for i in data:
+        if re.match('^[1-9]\d*$', i.get('index')) is None:
+            resp = {'status': 0, 'message': 'index 应为数字'}
+            return HttpResponse(ujson.dumps(resp))
+        if (i.get('type') in errortype):
+            resp = {'status': 0, 'message': 'type 值错误'}
+            return HttpResponse(ujson.dumps(resp))
+        if (i.get('index') in record.index):
+            resp = {'status': 0, 'message': 'index 重复'}
+            return HttpResponse(ujson.dumps(resp))
+        if (i.get('index') == '100'):
+            resp = {'status': 0, 'message': 'index 不能为100'}
+            return HttpResponse(ujson.dumps(resp))
+        record.index.append(i.get('index'))
+        record.type.append(i.get('type'))
+        record.value.append(i.get('data'))
+    perfix = response.get('prefix')
+    handle_record = reslove(perfix, ip='172.171.1.80', port=8080)
+    handle1 = handles.objects.filter(perix=perfix)
+    if handle_record is not None or handle1.exists():
+        resp = {'status': 0, 'message': '该前缀已经存在'}
+        return HttpResponse(ujson.dumps(resp))
+    now = django.utils.timezone.datetime.now().strftime('%Y-%m-%d')
+    userid = response.get('userid')
+    user1 = user.objects.get(id=userid)
+    username = user1.username
+    company = user1.company
+    serverid = response.get('serverid')
+    server2 = server.objects.get(id=serverid)
+    handle1 = handles.create(company=company, username=username, perix=perfix, count=0, time=now, server=server2)
+    handle1.save()
+    createh(record, perfix, server2.ip)
+    resp = {'status': 1, 'message': '创建成功'}
+    return HttpResponse(ujson.dumps(resp), content_type='application/json; charset=utf-8')
+
+@auth_permission_required('handleProjectVue.user')
+def AddHandleDate(request):
+    response = ujson.loads(request.body.decode('utf-8'))
+    if response.get('prefix'):
+        perfix = response.get('prefix')
+    else:
+        resp = {'status': 0, 'message': '输入正确的prefix'}
+        return HttpResponse(ujson.dumps(resp), content_type='application/json; charset=utf-8')
+    perfix_record = handles.objects.filter(perix=perfix)
+    handle_record = reslove(perfix, ip='39.107.238.25', port=8000)
+    if perfix_record.exists() or handle_record is not None:
+        handle1= handles.objects.get(perix=perfix)
+
+        if  response.get('Data'):
+            data = response.get('Data')
+        else:
+            resp = {'status': 0, 'message': '输入正确的data'}
+            return HttpResponse(ujson.dumps(resp), content_type='application/json; charset=utf-8')
+        record.index = []
+        record.type = []
+        record.value = []
+        errortype = ['HS_ADMIN', 'HS_SITE', 'HS_NA_DELEGATE', 'HS_SERV', 'HS_ALIAS', 'HS_PRIMARY', 'HS_VLIST']
+        for i in data:
+            if re.match('^[1-9]\d*$', i.get('index')) is None:
+                resp = {'status': 0, 'message': 'type 应为数字'}
+                return HttpResponse(ujson.dumps(resp))
+            if (i.get('type') in errortype):
+                resp = {'status': 0, 'message': 'type 值错误'}
+                return HttpResponse(ujson.dumps(resp))
+            if (i.get('index') in record.index):
+                resp = {'status': 0, 'message': 'index 重复'}
+                return HttpResponse(ujson.dumps(resp))
+            if (i.get('index') == '100'):
+                resp = {'status': 0, 'message': 'index 不能为100'}
+                return HttpResponse(ujson.dumps(resp))
+            record.index.append(i.get('index'))
+            record.type.append(i.get('type'))
+            record.value.append(i.get('data'))
+        result = adddata(record, perfix, handle1.server.ip, handle1.server.port)
+        if result is not 1:
+            resp = {'status': 0, 'message': 'index '+str(result)+'已经存在'}
+            return HttpResponse(ujson.dumps(resp), content_type='application/json; charset=utf-8')
+        resp = {'status': 1, 'message': '添加成功'}
+        return HttpResponse(ujson.dumps(resp), content_type='application/json; charset=utf-8')
+    resp = {'status': 0, 'message': '前缀不存在无法添加'}
+    return HttpResponse(ujson.dumps(resp), content_type='application/json; charset=utf-8')
+
+@auth_permission_required('handleProjectVue.user')
+def DelHandleDate(request):
+    response = ujson.loads(request.body.decode('utf-8'))
+    if response.get('prefix'):
+        perfix = response.get('prefix')
+    else:
+        resp = {'status': 0, 'message': '输入正确的prefix'}
+        return HttpResponse(ujson.dumps(resp), content_type='application/json; charset=utf-8')
+    perfix_record = handles.objects.filter(perix=perfix)
+    handle_record = reslove(perfix, ip='39.107.238.25', port=8000)
+    if perfix_record.exists() or handle_record is not None:
+        handle1 = handles.objects.get(perix=perfix)
+        if response.get('index'):
+            data = response.get('index')
+        else:
+            resp = {'status': 0, 'message': '输入正确的index'}
+            return HttpResponse(ujson.dumps(resp), content_type='application/json; charset=utf-8')
+        if 100 in data:
+            resp = {'status': 0, 'message': 'index不能为100'}
+            return HttpResponse(ujson.dumps(resp), content_type='application/json; charset=utf-8')
+        result = daletedata(data, perfix, handle1.server.ip, handle1.server.port)
+        if result is not 1:
+            resp = {'status': 0, 'message': 'index ' + str(result) + '不存在'}
+            return HttpResponse(ujson.dumps(resp), content_type='application/json; charset=utf-8')
+        resp = {'status': 1, 'message': '删除成功'}
+        return HttpResponse(ujson.dumps(resp), content_type='application/json; charset=utf-8')
+    resp = {'status': 0, 'message': '前缀不存在无法删除'}
+    return HttpResponse(ujson.dumps(resp), content_type='application/json; charset=utf-8')
+
+@auth_permission_required('handleProjectVue.user')
+def UpdateHandleDate(request):
+    response = ujson.loads(request.body.decode('utf-8'))
+    if response.get('prefix'):
+        perfix = response.get('prefix')
+    else:
+        resp = {'status': 0, 'message': '输入正确的prefix'}
+        return HttpResponse(ujson.dumps(resp), content_type='application/json; charset=utf-8')
+    perfix_record = handles.objects.filter(perix=perfix)
+    handle_record = reslove(perfix, ip='39.107.238.25', port=8000)
+    if perfix_record.exists() or handle_record is not None:
+        handle1= handles.objects.get(perix=perfix)
+        if  response.get('Data'):
+            data = response.get('Data')
+        else:
+            resp = {'status': 0, 'message': '输入正确的data'}
+            return HttpResponse(ujson.dumps(resp), content_type='application/json; charset=utf-8')
+        record.index = []
+        record.type = []
+        record.value = []
+        errortype = ['HS_ADMIN', 'HS_SITE', 'HS_NA_DELEGATE', 'HS_SERV', 'HS_ALIAS', 'HS_PRIMARY', 'HS_VLIST']
+        for i in data:
+            if re.match('^[1-9]\d*$', i.get('index')) is None:
+                resp = {'status': 0, 'message': 'type 应为数字'}
+                return HttpResponse(ujson.dumps(resp))
+            if (i.get('type') in errortype):
+                resp = {'status': 0, 'message': 'type 值错误'}
+                return HttpResponse(ujson.dumps(resp))
+            if (i.get('index') in record.index):
+                resp = {'status': 0, 'message': 'index 重复'}
+                return HttpResponse(ujson.dumps(resp))
+            if (i.get('index') == '100'):
+                resp = {'status': 0, 'message': 'index 不能为100'}
+                return HttpResponse(ujson.dumps(resp))
+            record.index.append(i.get('index'))
+            record.type.append(i.get('type'))
+            record.value.append(i.get('data'))
+        result = updatedata(record, perfix, handle1.server.ip, handle1.server.port)
+        if result is not 1:
+            resp = {'status': 0, 'message': 'index '+str(result)+'不存在'}
+            return HttpResponse(ujson.dumps(resp), content_type='application/json; charset=utf-8')
+        resp = {'status': 1, 'message': '修改成功'}
+        return HttpResponse(ujson.dumps(resp), content_type='application/json; charset=utf-8')
+    resp = {'status': 0, 'message': '前缀不存在无法修改'}
+    return HttpResponse(ujson.dumps(resp), content_type='application/json; charset=utf-8')
+
+
+
 
 def Classifiedquery(request):
     if request.method != 'POST':
         resp = {'status': 0, 'message': '请用post方法'}
         return HttpResponse(ujson.dumps(resp))
     data = ujson.loads(request.body.decode('utf-8'))
-    biaoshi = data.get('prefix')
-    type = data.get('type')
+    if data.get('prefix'):
+        biaoshi = data.get('prefix')
+    else:
+        resp = {'status': 0, 'message': '输入正确的prefix'}
+        return HttpResponse(ujson.dumps(resp), content_type='application/json; charset=utf-8')
+    if data.get('type'):
+        type = data.get('type')
+    else:
+        resp = {'status': 0, 'message': '输入正确的type'}
+        return HttpResponse(ujson.dumps(resp), content_type='application/json; charset=utf-8')
     handlepattern = '20.500.'
     niotpantter = 'cn.pub.xty.100'
     ecodepantter = '100036930100'
     oidpanntter = '1.2.156.86'
+    gs1panntter = '[0-9]*'
     DNSpattern = '[a-zA-Z0-9][-a-zA-Z0-9]{0,62}(\.[a-zA-Z0-9][-a-zA-Z0-9]{0,62})+\.?'
     now = django.utils.timezone.datetime.now().strftime('%Y-%m-%d')
-    if type==1 and re.search(handlepattern, biaoshi):
+    if type == 1 and re.search(handlepattern, biaoshi):
         handleperix = biaoshi
         obj1 = handles.objects.filter(perix=handleperix)
         if obj1.exists():
@@ -369,60 +506,41 @@ def Classifiedquery(request):
                 resolveRecord1.save()
             return HttpResponse(ujson.dumps(d1))
     if type == 2:
-        list1 = []
-        list2 = []
         count = handles.objects.filter(perix__startswith=biaoshi).count()
-        handlelist = list(handles.objects.filter(perix__startswith=biaoshi))
-        result = []
-        if len(handlelist) > 5000:
-            resp = {'status': 0, 'message': "匹配标识过多"}
+        if count > 0:
+            handles1 = handles.objects.filter(perix__startswith=biaoshi).values('id', 'perix', 'username')
+            page = data.get('pageNum')  # 必须
+            pageSize = data.get('pageSize')  # 必须 book_list = book.objects.filter(date__range=(date_from, date_to))
+            paginator = Paginator(handles1, pageSize)
+            if page:
+                data_list = paginator.page(page).object_list
+            else:
+                data_list = paginator.page(1).object_list
+            resp = {'data': data_list, 'totalCount': paginator.count}
             return HttpResponse(ujson.dumps(resp))
-        if len(handlelist) != 0:
-            for i in range(0, count):
-                handle = handlelist[i]
-                perix = handle.perix
-                obj = handles.objects.get(perix=perix)
-                handle_record = reslove(perix, obj.server.ip, obj.server.port)
-                handle1 = analyze_json(handle_record)
-                handle.count = handle.count + 1
-                handle.save()
-                d1 = dict()
-                data = list()
-                for row in handle1.context:
-                    row['prefx'] = perix
-                    data.append(row)
-                    print row
-                d1['data'] = data
-                print  d1
-                result.append(d1)
-            reback = {}
-            reback['status'] = 1
-            reback['type'] = 'handle'
-            reback['result'] = result
-            return HttpResponse(ujson.dumps(reback))
 
-    if (re.search(niotpantter, biaoshi) != None):
-        datalist = serverquery.Naptrquery('172.171.1.80', biaoshi)
-        if datalist == {}:
-            resp = {'status': 0, 'message': "不能解析该标识"}
-            return HttpResponse(ujson.dumps(resp))
-        result = dict()
-        result['type'] = 'niot'
-        result['status'] = 1
-        result['data'] = [datalist]
-        return HttpResponse(ujson.dumps(result))
-    if (re.search(ecodepantter, biaoshi) != None):
-        datalist = serverquery.Naptrquery('172.171.1.80', biaoshi)
-        if datalist == {}:
-            resp = {'status': 0, 'message': "不能解析该标识"}
-            return HttpResponse(ujson.dumps(resp))
-        result = dict()
-        result['type'] = 'ecode'
-        result['status'] = 1
-        result['data'] = [datalist]
-        return HttpResponse(ujson.dumps(result))
-    if (re.search(oidpanntter, biaoshi) != None):
-        datalist = serverquery.Naptrquery('172.171.1.80', biaoshi)
+    if (re.search(niotpantter, biaoshi)!=None):
+            datalist = serverquery.OIDquery('172.171.1.80', biaoshi)
+            if datalist == {}:
+                resp = {'status': 0, 'message': "不能解析该标识"}
+                return HttpResponse(ujson.dumps(resp))
+            result = dict()
+            result['type'] = 'niot'
+            result['status'] = 1
+            result['data'] = [datalist]
+            return HttpResponse(ujson.dumps(result))
+    if(re.search(ecodepantter, biaoshi) != None):
+            datalist = serverquery.OIDquery('172.171.1.80', biaoshi)
+            if datalist == {}:
+                resp = {'status': 0, 'message': "不能解析该标识"}
+                return HttpResponse(ujson.dumps(resp))
+            result = dict()
+            result['type'] = 'ecode'
+            result['status'] = 1
+            result['data'] = [datalist]
+            return HttpResponse(ujson.dumps(result))
+    if  (re.search(oidpanntter, biaoshi)!=None ) :
+        datalist = serverquery.OIDquery('172.171.1.80', biaoshi)
         if datalist == {}:
             resp = {'status': 0, 'message': "不能解析该标识"}
             return HttpResponse(ujson.dumps(resp))
@@ -431,16 +549,26 @@ def Classifiedquery(request):
         result['status'] = 1
         result['data'] = [datalist]
         return HttpResponse(ujson.dumps(result))
-    if re.search(DNSpattern, biaoshi) != None:
-        datalist = serverquery.DNSquery('172.171.1.80', biaoshi)
+    if re.match(gs1panntter, biaoshi) != None:
+        datalist = serverquery.GS1query('172.171.1.80', biaoshi)
         if datalist == []:
             resp = {'status': 0, 'message': "不能解析该标识"}
             return HttpResponse(ujson.dumps(resp))
         result = dict()
         result['status'] = 1
-        result['type'] = 'dns'
+        result['type'] = 'gs1'
         result['data'] = datalist
         return HttpResponse(ujson.dumps(result))
+    if re.match(DNSpattern, biaoshi) != None:
+            datalist = serverquery.DNSquery('172.171.1.80', biaoshi)
+            if datalist == []:
+                resp = {'status': 0, 'message': "不能解析该标识"}
+                return HttpResponse(ujson.dumps(resp))
+            result = dict()
+            result['status'] =1
+            result['type'] = 'dns'
+            result['data'] = datalist
+            return HttpResponse(ujson.dumps(result))
     resp = {'status': 0, 'message': "不能解析该标识"}
     return HttpResponse(ujson.dumps(resp))
 
@@ -454,7 +582,6 @@ def Download(request):
     response['Content-Disposition'] = 'attachment;filename="example.xlsx"'
     return response
 
-
 @auth_permission_required('handleProjectVue.user')
 def upload_file(request):
     if request.method == 'POST':
@@ -464,13 +591,11 @@ def upload_file(request):
         company = user1.company
         serverid = request.POST['serverid']
         server2 = server.objects.get(id=serverid)
-        # username = request.POST['name']
-        # company = request.POST['company']
         fix2 = request.POST['prefix']
-        now = django.utils.timezone.datetime.now().strftime('%Y-%m-%d')
+        now =django.utils.timezone.datetime.now().strftime('%Y-%m-%d')
         uploadedFile = request.FILES.get('file', None)
         wb = xlrd.open_workbook(filename=uploadedFile.name, file_contents=request.FILES['file'].read())
-        current_date = django.utils.timezone.datetime.now()
+        current_date = datetime.now()
         current_date_format = unicode(current_date.strftime('%Y-%m-%d %H-%M-%S'))
         destination = open(
             os.path.join("uploadexcel/" + current_date_format + "_" + username + "_" + uploadedFile.name),
@@ -489,6 +614,7 @@ def upload_file(request):
             havenul['error'] = ('have  null')
             error = havenul
             nonan_df = df2.dropna(axis=0, how='any')
+
             # index为100
             index100 = nonan_df[nonan_df['index'].isin([100])]
             index100['error'] = 'index 100 invalid'
@@ -502,30 +628,34 @@ def upload_file(request):
             error = error.append(typeerror)
             typetrue = no_index100[~no_index100['type'].isin(errortype)]
 
+
+
             # 处理数据相同行
             same_df = typetrue[typetrue.duplicated()]
-            same_df['error'] = ('have same vlue , system have creat once succeed you don not neet to creat again')
+            same_df['error'] = ('have the same vlue , system have creat once succeed you don not neet to creat again')
             error = error.append(same_df)
             nosame_df = typetrue.drop_duplicates()
             group1 = nosame_df.groupby(nosame_df['prefix'])
+
+
             # 创建一个空的Dataframe
             errorprefix = pd.DataFrame()
             for a, b in group1:
                 perfix = fix2 + str(a)
                 perfix_record = handles.objects.filter(perix=perfix)
-                if perfix_record.exists():
-                    b['error'] = "perfix  have existsed"
+                handle_record = reslove(perfix, ip='39.107.238.25', port=8000)
+                if perfix_record.exists() or handle_record is not None:
+                    b['error'] = 'prefix  have existsed'
                     errorprefix = errorprefix.append(b)
                 else:
                     sameindex = b[b.duplicated(subset=['index'], keep=False)]
                     if sameindex.empty == False:
-                        sameindex['error'] = ('have sanme index')
+                        sameindex['error'] = ('have same index')
                         error = error.append(sameindex)
                         b.drop_duplicates(subset=['index'], keep=False, inplace=True)
                     if b.empty == False:
                         btype = b.astype('unicode')
                         correct = btype[btype['index'].str.match('^[1-9]\d*$') == True]
-                        print correct
                         if correct.empty == False:
                             record.index = correct['index'].values.tolist()
                             record.type = correct['type'].values.tolist()
@@ -690,6 +820,9 @@ def UpdatehHandle(request):
     record.value = []
     errortype = ['HS_ADMIN', 'HS_SITE', 'HS_NA_DELEGATE', 'HS_SERV', 'HS_ALIAS', 'HS_PRIMARY', 'HS_VLIST']
     for i in data:
+        if re.match('^[1-9]\d*$', i.get('index')) is None:
+            resp = {'status': 0, 'message': 'type 应为数字'}
+            return HttpResponse(ujson.dumps(resp))
         if (i.get('type') in errortype):
             resp = {'status': 0, 'message': 'type 值错误'}
             return HttpResponse(ujson.dumps(resp))
@@ -697,7 +830,7 @@ def UpdatehHandle(request):
             resp = {'status': 0, 'message': 'index 重复'}
             return HttpResponse(ujson.dumps(resp))
         if (i.get('index') == '100'):
-            resp = {'status': 0, 'message': 'index 值错误'}
+            resp = {'status': 0, 'message': 'index 不能为100'}
             return HttpResponse(ujson.dumps(resp))
         record.index.append(i.get('index'))
         record.type.append(i.get('type'))

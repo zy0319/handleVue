@@ -39,9 +39,88 @@ def update(ip,prefix):
         update_handle_record(prefix, path_to_private_key_pem_file_aliyun, admin_id_aliyun, ip, 8000)
 
 
+def adddata(record, prefix,ip,port):
+    handle_record1 = get_handle_record(prefix, ip=ip, port=port)
+    datalist=handle_record1.get('values')
+    indexlist=[]
+    errorlist=[]
+    for i in datalist:
+        indexlist.append(i.get('index'))
+    records = []
+    current_date = datetime.now()
+    current_date_format = unicode(current_date.strftime('%Y-%m-%dT%H:%M:%SZ'))
+    for i in range(len(record.index)):
+        if int(record.index[i]) in indexlist:
+           errorlist.append(int(record.index[i]))
+        records.append({u'index': record.index[i], u'ttl': 86400, u'type': record.type[i], u'timestamp': current_date_format,
+                  u'data': {u'value': record.value[i], u'format': u'string'}})
+    if  errorlist != []:
+        return errorlist
+    datalist.extend(records)
+    handle_record = {u'values': datalist, u'handle': unicode(prefix), u'responseCode': 1}
+    if ip == '172.171.1.80':
+        create_handle_record(handle_record, prefix, path_to_private_key_pem_file_nanJing, admin_id_nanJing, ip=ip, port=port)
+    elif ip == '39.107.238.25':
+        create_handle_record(handle_record, prefix, path_to_private_key_pem_file_aliyun, admin_id_aliyun, ip=ip,   port=port)
+    return 1
+
+def daletedata(index, prefix,ip,port):
+    handle_record1 = get_handle_record(prefix, ip=ip, port=port)
+    datalist=handle_record1.get('values')
+    indexlist=[]
+    for i in datalist:
+        indexlist.append(i.get('index'))
+    if set(index) < set(indexlist):
+        for i in datalist:
+            if i.get('index') in index:
+                datalist.remove(i)
+        handle_record = {u'values': datalist, u'handle': unicode(prefix), u'responseCode': 1}
+        if ip == '172.171.1.80':
+            create_handle_record(handle_record, prefix, path_to_private_key_pem_file_nanJing, admin_id_nanJing, ip=ip,
+                                 port=port)
+        elif ip == '39.107.238.25':
+            create_handle_record(handle_record, prefix, path_to_private_key_pem_file_aliyun, admin_id_aliyun, ip=ip,
+                                 port=port)
+        return 1
+    error = list(set(index) - set(indexlist))
+    return error
+
+def updatedata(record, prefix,ip,port):
+    handle_record1 = get_handle_record(prefix, ip=ip, port=port)
+    datalist=handle_record1.get('values')
+    indexlist=[]
+    errorlist=[]
+    truelist = []
+    for i in datalist:
+        indexlist.append(i.get('index'))
+    print indexlist
+    records = []
+    current_date = datetime.now()
+    current_date_format = unicode(current_date.strftime('%Y-%m-%dT%H:%M:%SZ'))
+    for i in range(len(record.index)):
+        if int(record.index[i]) not in indexlist:
+            errorlist.append(int(record.index[i]))
+        truelist.append(int(record.index[i]))
+        records.append({u'index': record.index[i], u'ttl': 86400, u'type': record.type[i], u'timestamp': current_date_format,
+                  u'data': {u'value': record.value[i], u'format': u'string'}})
+    if errorlist != []:
+        return errorlist
+    for i in datalist:
+        if i.get('index') in truelist:
+            datalist.remove(i)
+    datalist.extend(records)
+    handle_record = {u'values': datalist, u'handle': unicode(prefix), u'responseCode': 1}
+    if ip == '172.171.1.80':
+        create_handle_record(handle_record, prefix, path_to_private_key_pem_file_nanJing, admin_id_nanJing, ip=ip,
+                             port=port)
+    elif ip == '39.107.238.25':
+        create_handle_record(handle_record, prefix, path_to_private_key_pem_file_aliyun, admin_id_aliyun, ip=ip,
+                             port=port)
+    return 1
+
+
 def delete(prefix,ip):
     if ip == '172.171.1.80':
-
         delete_handle_record(prefix, path_to_private_key_pem_file_nanJing, admin_id_nanJing, ip, 8080)
     elif ip == '39.107.238.25':
         delete_handle_record(prefix, path_to_private_key_pem_file_aliyun, admin_id_aliyun, ip, 8000)
