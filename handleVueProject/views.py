@@ -19,13 +19,9 @@ from models import *
 from handleVueProject.pubprivkeyauth import createh, delete
 from handleVueProject.pubprivkeyauth import reslove
 from handleVueProject import serverquery
-<<<<<<< HEAD
 from serverquery import config
 from handleVueProject.pubprivkeyauth import *
-=======
 from serverquery import sftpFile, downFile, removeFile
->>>>>>> 0beb74968bcea729517946c5d26a59ebba27fa30
-
 UserModel = get_user_model()
 
 
