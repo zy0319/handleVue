@@ -19,8 +19,12 @@ from models import *
 from handleVueProject.pubprivkeyauth import createh, delete
 from handleVueProject.pubprivkeyauth import reslove
 from handleVueProject import serverquery
+<<<<<<< HEAD
 from serverquery import config
 from handleVueProject.pubprivkeyauth import *
+=======
+from serverquery import sftpFile, downFile, removeFile
+>>>>>>> 0beb74968bcea729517946c5d26a59ebba27fa30
 
 UserModel = get_user_model()
 
@@ -89,12 +93,16 @@ def register(request):
         else:
             accessory = request.FILES.get("file")
             if accessory != None:
-                destination = open("upload/" + accessory.name, 'wb')
-                for chunk in accessory.chunks():  # 分块写入文件
-                    destination.write(chunk)
-                destination.close()
+                # destination = open("upload/" + accessory.name, 'wb')
+                # for chunk in accessory.chunks():  # 分块写入文件
+                #     destination.write(chunk)
+                # destination.close()
                 after = os.path.splitext(accessory.name)[1]
-                os.rename("upload/" + accessory.name, "upload/" + userName + after)
+                path = os.path.join('/home/fnii/registerFile', userName+after)
+                # path1 = os.path.join('upload/'+accessory.name)
+                # print path1
+                # os.rename("upload/" + accessory.name, "upload/" + userName + after)
+                sftpFile("172.171.1.80", "22", "root", "pms123handle$%^", accessory, path)
                 user1 = user.create(userName, password, userPhone, userEmail, userCardId, userName, 0, now,
                                     companyName)
                 user1.set_password(password)
@@ -128,7 +136,7 @@ def userSelect(request):
     pageSize = data.get('pageSize')
     user1 = user.objects.filter(verify=1, username__contains=userName, company__contains=companyName, time__lte=endTime,
                                 time__gte=startTime).values('id', 'username', 'phonenumber', 'email', 'card', 'company',
-                                                            'time')
+                                                            'time').order_by('-time')
     paginator1 = Paginator(user1, pageSize)  # 每页显示4条
     if page:
         data_list = paginator1.page(page).object_list
@@ -145,7 +153,8 @@ def userDelete(request):
     user1 = user.objects.get(id=id)
     username = user1.username
     user1.delete()
-    os.remove("upload/" + username + '.xlsx')
+    removeFile("172.171.1.80", "22", "root", "pms123handle$%^", username+'.xlsx')
+    # os.remove("upload/" + username + '.xlsx')
     resp = {'status': 1, 'message': 'delete success'}
     return HttpResponse(ujson.dumps(resp), content_type='application/json; charset=utf-8')
 
@@ -182,7 +191,7 @@ def userVerify(request):
     user1 = user.objects.filter(verify__in=[0, 3], username__contains=userName, company__contains=companyName,
                                 time__lte=endTime, time__gte=startTime).values('id', 'username', 'phonenumber', 'email',
                                                                                'card', 'company',
-                                                                               'verify', 'time')
+                                                                               'verify', 'time').order_by('-time')
     paginator1 = Paginator(user1, pageSize)  # 每页显示4条
     if page:
         data_list = paginator1.page(page).object_list
@@ -234,13 +243,17 @@ def downVerify(request):
     id = data.get('id')
     # id = request.GET['id']
     user1 = user.objects.get(id=id)
-    file = open("upload/" + user1.username + '.xlsx', 'rb')
+    path = os.path.join('/home/fnii/registerFile/', user1.username + '.xlsx')
+    print path
+    file = downFile("172.171.1.80", "22", "root", "pms123handle$%^", path)
+    # file = open("upload/" + user1.username + '.xlsx', 'rb')
     HttpResponse = FileResponse(file)
     HttpResponse['Content-Type'] = 'application/octet-stream'
     HttpResponse['Content-Disposition'] = 'attachment;filename="example.xlsx"'
     return HttpResponse
 
 
+# 下载注册模版
 def downVerify1(request):
     file = open("mobanUpload/" + 'example.xlsx', 'rb')
     HttpResponse = FileResponse(file)
@@ -736,7 +749,7 @@ def ManyQuery(request):
         handles1 = handles.objects.filter(username__contains=creatname, perix__contains=prefix,
                                           company__contains=companyname,
                                           time__lte=endTime, time__gte=startTime).values('id', 'username', 'perix',
-                                                                                         'time', 'company', 'server_id')
+                                                                                         'time', 'company', 'server_id').order_by('-time')
         paginator = Paginator(handles1, pageSize)
         if page:
             data_list = paginator.page(page).object_list
@@ -749,7 +762,7 @@ def ManyQuery(request):
         handles1 = handles.objects.filter(username=user1.username, perix__contains=prefix,
                                           company__contains=companyname,
                                           time__lte=endTime, time__gte=startTime).values('id', 'username', 'perix',
-                                                                                         'time', 'company', 'server_id')
+                                                                                         'time', 'company', 'server_id').order_by('-time')
         paginator = Paginator(handles1, pageSize)
         if page:
             data_list = paginator.page(page).object_list
@@ -785,7 +798,7 @@ def VisitStatus(request):
         handles1 = handles.objects.filter(username__contains=creatname, perix__contains=prefix,
                                           company__contains=companyname,
                                           time__lte=endTime, time__gte=startTime).values('id', 'username', 'perix',
-                                                                                         'time', 'company', 'server_id','count')
+                                                                                         'time', 'company', 'server_id', 'count').order_by('-time')
         paginator = Paginator(handles1, pageSize)
         if page:
             data_list = paginator.page(page).object_list
@@ -798,7 +811,7 @@ def VisitStatus(request):
         handles1 = handles.objects.filter(username=user1.username, perix__contains=prefix,
                                           company__contains=companyname,
                                           time__lte=endTime, time__gte=startTime).values('id', 'username', 'perix',
-                                                                                         'time', 'company', 'server_id','count')
+                                                                                         'time', 'company', 'server_id','count').order_by('-time')
         paginator = Paginator(handles1, pageSize)
         if page:
             data_list = paginator.page(page).object_list
@@ -931,7 +944,7 @@ def resolveCount(request):
     return HttpResponse(ujson.dumps(resp))
 
 
-# @auth_permission_required('handleProjectVue.user')
+@auth_permission_required('handleProjectVue.user')
 def responseSuccess(request):
     response = ujson.loads(request.body.decode('utf-8'))
     id = response.get('id')
