@@ -20,7 +20,7 @@ from handleVueProject.pubprivkeyauth import createh, delete
 from handleVueProject.pubprivkeyauth import reslove
 from handleVueProject import serverquery
 from serverquery import config
-from handleVueProject.pubprivkeyauth import *
+from handleVueProject.pubprivkeyauth import adddata,daletedata,updatedata
 from serverquery import sftpFile, downFile, removeFile
 UserModel = get_user_model()
 
