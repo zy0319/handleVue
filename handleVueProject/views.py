@@ -355,7 +355,7 @@ def AddHandleDate(request):
         record.value = []
         errortype = ['HS_ADMIN', 'HS_SITE', 'HS_NA_DELEGATE', 'HS_SERV', 'HS_ALIAS', 'HS_PRIMARY', 'HS_VLIST']
         for i in data:
-            if re.match('^[1-9]\d*$', i.get('index')) is None:
+            if re.match('^[1-9]\d*$', str(i.get('index'))) is None:
                 resp = {'status': 0, 'message': 'index 应为数字'}
                 return HttpResponse(ujson.dumps(resp))
             if (i.get('type') in errortype):
@@ -430,7 +430,7 @@ def UpdateHandleDate(request):
         record.value = []
         errortype = ['HS_ADMIN', 'HS_SITE', 'HS_NA_DELEGATE', 'HS_SERV', 'HS_ALIAS', 'HS_PRIMARY', 'HS_VLIST']
         for i in data:
-            if re.match('^[1-9]\d*$', i.get('index')) is None:
+            if re.match('^[1-9]\d*$', str(i.get('index'))) is None:
                 resp = {'status': 0, 'message': 'index 应为数字'}
                 return HttpResponse(ujson.dumps(resp))
             if (i.get('type') in errortype):
@@ -652,7 +652,7 @@ def upload_file(request):
             for a, b in group1:
                 perfix = fix2 + str(a)
                 perfix_record = handles.objects.filter(perix=perfix)
-                handle_record = reslove(perfix, ip='39.107.238.25', port=8000)
+                handle_record = reslove(perfix, ip='172.171.1.80', port=8080)
                 if perfix_record.exists() or handle_record is not None:
                     b['error'] = 'prefix  have existsed'
                     errorprefix = errorprefix.append(b)
