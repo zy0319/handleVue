@@ -659,7 +659,7 @@ def upload_file(request):
                 else:
                     sameindex = b[b.duplicated(subset=['index'], keep=False)]
                     if sameindex.empty == False:
-                        sameindex['error'] = ('have same index')
+                        sameindex['error'] = ('have the same index')
                         error = error.append(sameindex)
                         b.drop_duplicates(subset=['index'], keep=False, inplace=True)
                     if b.empty == False:
@@ -676,7 +676,7 @@ def upload_file(request):
                             succeedcreate = succeedcreate.append(correct)
                         if correct.shape[0] != btype.shape[0]:
                             errortype = btype[btype['index'].str.match('^[1-9]\d*$') == False]
-                            errortype['error'] = 'error index type'
+                            errortype['error'] = 'index value have error '
                             error = error.append(errortype)
             error = error.append(errorprefix)
         else:
