@@ -558,7 +558,7 @@ def Classifiedquery(request):
         result['status'] = 1
         result['data'] = [datalist]
         return HttpResponse(ujson.dumps(result))
-    if re.match(gs1panntter, biaoshi) != None:
+    if biaoshi.isalnum()==True :
         datalist = serverquery.GS1query('172.171.1.80', biaoshi)
         if datalist == []:
             resp = {'status': 0, 'message': "不能解析该标识"}
