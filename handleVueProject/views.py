@@ -604,7 +604,7 @@ def upload_file(request):
         now =django.utils.timezone.datetime.now().strftime('%Y-%m-%d')
         uploadedFile = request.FILES.get('file', None)
         wb = xlrd.open_workbook(filename=uploadedFile.name, file_contents=request.FILES['file'].read())
-        current_date = datetime.now()
+        current_date = django.utils.timezone.datetime.now()
         current_date_format = unicode(current_date.strftime('%Y-%m-%d %H-%M-%S'))
         destination = open(
             os.path.join("uploadexcel/" + current_date_format + "_" + username + "_" + uploadedFile.name),
