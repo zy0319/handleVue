@@ -298,7 +298,7 @@ def CreateHandle(request):
     record.value = []
     errortype = ['HS_ADMIN', 'HS_SITE', 'HS_NA_DELEGATE', 'HS_SERV', 'HS_ALIAS', 'HS_PRIMARY', 'HS_VLIST']
     for i in data:
-        if re.match('^[1-9]\d*$', i.get('index')) is None:
+        if re.match('^[1-9]\d*$', str(i.get('index'))) is None:
             resp = {'status': 0, 'message': 'index 应为数字'}
             return HttpResponse(ujson.dumps(resp))
         if (i.get('type') in errortype):
@@ -829,7 +829,7 @@ def UpdatehHandle(request):
     record.value = []
     errortype = ['HS_ADMIN', 'HS_SITE', 'HS_NA_DELEGATE', 'HS_SERV', 'HS_ALIAS', 'HS_PRIMARY', 'HS_VLIST']
     for i in data:
-        if re.match('^[1-9]\d*$', i.get('index')) is None:
+        if re.match('^[1-9]\d*$', str(i.get('index'))) is None:
             resp = {'status': 0, 'message': 'type 应为数字'}
             return HttpResponse(ujson.dumps(resp))
         if (i.get('type') in errortype):
