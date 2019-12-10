@@ -674,8 +674,8 @@ def upload_file(request):
                             handle1.save()
                             createh(record, perfix, server2.ip)
                             succeedcreate = succeedcreate.append(correct)
-                        if correct.shape[0] != b.shape[0]:
-                            errortype = b[b['index'].str.match('^[1-9]\d*$') == False]
+                        if correct.shape[0] != btype.shape[0]:
+                            errortype = btype[btype['index'].str.match('^[1-9]\d*$') == False]
                             errortype['error'] = 'error index type'
                             error = error.append(errortype)
             error = error.append(errorprefix)
