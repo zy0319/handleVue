@@ -298,8 +298,8 @@ def CreateHandle(request):
     record.value = []
     errortype = ['HS_ADMIN', 'HS_SITE', 'HS_NA_DELEGATE', 'HS_SERV', 'HS_ALIAS', 'HS_PRIMARY', 'HS_VLIST']
     for i in data:
-        if re.match('^[1-9]\d*$', i.get('index')) is None:
-            resp = {'status': 0, 'message': 'index 应为数字'}
+        if re.match('^[1-9]\d*$', str(i.get('index'))) is None:
+            resp = {'status': 0, 'message': 'index 应为正整数'}
             return HttpResponse(ujson.dumps(resp))
         if (i.get('type') in errortype):
             resp = {'status': 0, 'message': 'type 值错误'}
@@ -356,7 +356,7 @@ def AddHandleDate(request):
         record.value = []
         errortype = ['HS_ADMIN', 'HS_SITE', 'HS_NA_DELEGATE', 'HS_SERV', 'HS_ALIAS', 'HS_PRIMARY', 'HS_VLIST']
         for i in data:
-            if re.match('^[1-9]\d*$', i.get('index')) is None:
+            if re.match('^[1-9]\d*$', str(i.get('index'))) is None:
                 resp = {'status': 0, 'message': 'index 应为数字'}
                 return HttpResponse(ujson.dumps(resp))
             if (i.get('type') in errortype):
@@ -433,7 +433,7 @@ def UpdateHandleDate(request):
         record.value = []
         errortype = ['HS_ADMIN', 'HS_SITE', 'HS_NA_DELEGATE', 'HS_SERV', 'HS_ALIAS', 'HS_PRIMARY', 'HS_VLIST']
         for i in data:
-            if re.match('^[1-9]\d*$', i.get('index')) is None:
+            if re.match('^[1-9]\d*$', str(i.get('index'))) is None:
                 resp = {'status': 0, 'message': 'index 应为数字'}
                 return HttpResponse(ujson.dumps(resp))
             if (i.get('type') in errortype):
@@ -559,7 +559,7 @@ def Classifiedquery(request):
         result['status'] = 1
         result['data'] = [datalist]
         return HttpResponse(ujson.dumps(result))
-    if re.match(gs1panntter, biaoshi) != None:
+    if biaoshi.isalnum()==True :
         datalist = serverquery.GS1query('172.171.1.80', biaoshi)
         if datalist == []:
             resp = {'status': 0, 'message': "不能解析该标识"}
@@ -606,7 +606,7 @@ def upload_file(request):
         now = django.utils.timezone.datetime.now().strftime('%Y-%m-%d')
         uploadedFile = request.FILES.get('file', None)
         wb = xlrd.open_workbook(filename=uploadedFile.name, file_contents=request.FILES['file'].read())
-        current_date = datetime.now()
+        current_date = django.utils.timezone.datetime.now()
         current_date_format = unicode(current_date.strftime('%Y-%m-%d %H-%M-%S'))
         destination = open(
             os.path.join("uploadexcel/" + current_date_format + "_" + username + "_" + uploadedFile.name),
@@ -651,14 +651,14 @@ def upload_file(request):
             for a, b in group1:
                 perfix = fix2 + str(a)
                 perfix_record = handles.objects.filter(perix=perfix)
-                handle_record = reslove(perfix, ip='39.107.238.25', port=8000)
+                handle_record = reslove(perfix, ip='172.171.1.80', port=8080)
                 if perfix_record.exists() or handle_record is not None:
                     b['error'] = 'prefix  have existsed'
                     errorprefix = errorprefix.append(b)
                 else:
                     sameindex = b[b.duplicated(subset=['index'], keep=False)]
                     if sameindex.empty == False:
-                        sameindex['error'] = ('have same index')
+                        sameindex['error'] = ('have the same index')
                         error = error.append(sameindex)
                         b.drop_duplicates(subset=['index'], keep=False, inplace=True)
                     if b.empty == False:
@@ -673,9 +673,9 @@ def upload_file(request):
                             handle1.save()
                             createh(record, perfix, server2.ip)
                             succeedcreate = succeedcreate.append(correct)
-                        if correct.shape[0] != b.shape[0]:
-                            errortype = b[b['index'].str.match('^[1-9]\d*$') == False]
-                            errortype['error'] = 'error index type'
+                        if correct.shape[0] != btype.shape[0]:
+                            errortype = btype[btype['index'].str.match('^[1-9]\d*$') == False]
+                            errortype['error'] = 'index value have error '
                             error = error.append(errortype)
             error = error.append(errorprefix)
         else:
@@ -831,8 +831,8 @@ def UpdatehHandle(request):
     record.value = []
     errortype = ['HS_ADMIN', 'HS_SITE', 'HS_NA_DELEGATE', 'HS_SERV', 'HS_ALIAS', 'HS_PRIMARY', 'HS_VLIST']
     for i in data:
-        if re.match('^[1-9]\d*$', i.get('index')) is None:
-            resp = {'status': 0, 'message': 'type 应为数字'}
+        if re.match('^[1-9]\d*$', str(i.get('index'))) is None:
+            resp = {'status': 0, 'message': 'index 应为正整数'}
             return HttpResponse(ujson.dumps(resp))
         if (i.get('type') in errortype):
             resp = {'status': 0, 'message': 'type 值错误'}

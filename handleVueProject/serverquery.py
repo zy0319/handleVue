@@ -1,7 +1,9 @@
 # coding=utf-8
 import paramiko
 import re
-
+import sys
+reload(sys)
+sys.setdefaultencoding('utf-8')
 # 设置主机列表
 host_list = [{'ip': '221.6.47.103', 'port': 22, 'username': 'root', 'password': 'pms123handle$%^'}]
 # {'ip': '101.132.112.222', 'port': 22, 'username': 'root', 'password': 'XUE66666ning'},
