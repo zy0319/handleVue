@@ -488,9 +488,9 @@ def Classifiedquery(request):
     for x in str(biaoshi):
         if x!=' ':
             str2=str2+x
-    biaoshilist=['10','11','20','21','22','25','27','77','44','86']
-    biaoshilist2=['0.NA','108']
-    if str2[0:2] in biaoshilist  or str2[0:3] in biaoshilist2:
+    biaoshilist = ['10', '11', '20', '21', '22', '25', '27', '77', '44', '86']
+    biaoshilist2 = ['0.NA']
+    if str2[0:2] in biaoshilist or str2[0:4] in biaoshilist2:
         handle_record = reslove(str2, ip='172.171.1.80', port=8080)
         handle1 = analyze_json(handle_record)
         d1 = dict()
