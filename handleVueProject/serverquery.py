@@ -2,8 +2,12 @@
 import paramiko
 import re
 import sys
+from handleVue.settings import HANDLE_CONFIG
+
 reload(sys)
 sys.setdefaultencoding('utf-8')
+
+
 # 设置主机列表
 host_list = [{'ip': '221.6.47.103', 'port': 22, 'username': 'root', 'password': 'pms123handle$%^'}]
 # {'ip': '101.132.112.222', 'port': 22, 'username': 'root', 'password': 'XUE66666ning'},
@@ -32,7 +36,8 @@ def downFile(ip, port, username, password, remote_file):
 
 def removeFile(ip, port, username, password, file):
     ssh.connect(hostname=ip, port=port, username=username, password=password)
-    ssh.exec_command('rm -rf /home/fnii/registerFile/'+file)
+    # ssh.exec_command('rm -rf /home/fnii/registerFile/'+file)
+    ssh.exec_command('rm -rf '+HANDLE_CONFIG['registerTemplate_address']+'/'+file)
 
 
 # 汇总
@@ -63,7 +68,9 @@ def config(ip, port, username, password):
 
     stdin, stdout, stderr = ssh.exec_command('sar -n DEV 1 1')
     str_out = stdout.read().decode("utf-8")
-    str_total = re.search('lo .*?\n', str_out).group(0)
+    # str_total = re.search('lo .*?\n', str_out).group(0)
+    str_total = re.search(HANDLE_CONFIG['netCard']+' .*?\n', str_out).group(0)
+
     s = str_total.split()
     rxkb = s[3]
     txkb = s[4]

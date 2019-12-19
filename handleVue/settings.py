@@ -98,12 +98,12 @@ WSGI_APPLICATION = 'handleVue.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'handleVueTest',
+        'NAME': 'handleVue',
         'USER': 'root',
-        # 'PASSWORD': 'zhangyi20120.0',
-        'PASSWORD': '123456',
-        # 'HOST': 'localhost',
-        'HOST': '172.171.1.80',
+        'PASSWORD': 'zhangyi20120.0',
+        # 'PASSWORD': '123456',
+        'HOST': 'localhost',
+        # 'HOST': '172.171.1.80',
         'PORT': '3306',
         'OPTIONS': {
             "init_command": "SET foreign_key_checks = 0;",
@@ -146,3 +146,8 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/1.11/howto/static-files/
 
 STATIC_URL = '/static/'
+
+HANDLE_CONFIG = {
+    'registerTemplate_address': '/home/fnii/registerFile',
+    'netCard': 'lo'
+}
