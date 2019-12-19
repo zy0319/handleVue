@@ -29,6 +29,7 @@ def downFile(ip, port, username, password, remote_file):
     sftp = ssh.open_sftp()
     return sftp.open(remote_file, 'rb')
 
+
 def removeFile(ip, port, username, password, file):
     ssh.connect(hostname=ip, port=port, username=username, password=password)
     ssh.exec_command('rm -rf /home/fnii/registerFile/'+file)

@@ -19,9 +19,9 @@ from models import *
 from handleVueProject.pubprivkeyauth import createh, delete
 from handleVueProject.pubprivkeyauth import reslove
 from handleVueProject import serverquery
-from serverquery import config
-from handleVueProject.pubprivkeyauth import adddata,daletedata,updatedata
+from handleVueProject.pubprivkeyauth import adddata, daletedata, updatedata
 from serverquery import sftpFile, downFile, removeFile
+
 UserModel = get_user_model()
 
 
@@ -94,7 +94,7 @@ def register(request):
                 #     destination.write(chunk)
                 # destination.close()
                 after = os.path.splitext(accessory.name)[1]
-                path = os.path.join('/home/fnii/registerFile', userName+after)
+                path = os.path.join('/home/fnii/registerFile', userName + after)
                 # path1 = os.path.join('upload/'+accessory.name)
                 # print path1
                 # os.rename("upload/" + accessory.name, "upload/" + userName + after)
@@ -149,7 +149,7 @@ def userDelete(request):
     user1 = user.objects.get(id=id)
     username = user1.username
     user1.delete()
-    removeFile("172.171.1.80", "22", "root", "pms123handle$%^", username+'.xlsx')
+    removeFile("172.171.1.80", "22", "root", "pms123handle$%^", username + '.xlsx')
     # os.remove("upload/" + username + '.xlsx')
     resp = {'status': 1, 'message': 'delete success'}
     return HttpResponse(ujson.dumps(resp), content_type='application/json; charset=utf-8')
@@ -265,7 +265,6 @@ def ServerList(request):
     return HttpResponse(ujson.dumps(resp))
 
 
-
 def analyze_json(jsons):
     handle.context = []
     if isinstance(jsons, dict):
@@ -288,6 +287,7 @@ def analyze_json(jsons):
                         # dict1[str(key)] = str(key_value)
                     handle.context.append(dict1)
     return handle
+
 
 @auth_permission_required('handleProjectVue.user')
 def CreateHandle(request):
@@ -332,6 +332,7 @@ def CreateHandle(request):
     resp = {'status': 1, 'message': '创建成功'}
     return HttpResponse(ujson.dumps(resp), content_type='application/json; charset=utf-8')
 
+
 @auth_permission_required('handleProjectVue.user')
 def AddHandleDate(request):
     response = ujson.loads(request.body.decode('utf-8'))
@@ -343,9 +344,9 @@ def AddHandleDate(request):
     perfix_record = handles.objects.filter(perix=perfix)
     handle_record = reslove(perfix, ip='39.107.238.25', port=8000)
     if perfix_record.exists() or handle_record is not None:
-        handle1= handles.objects.get(perix=perfix)
+        handle1 = handles.objects.get(perix=perfix)
 
-        if  response.get('Data'):
+        if response.get('Data'):
             data = response.get('Data')
         else:
             resp = {'status': 0, 'message': '输入正确的data'}
@@ -372,12 +373,13 @@ def AddHandleDate(request):
             record.value.append(i.get('data'))
         result = adddata(record, perfix, handle1.server.ip, handle1.server.port)
         if result is not 1:
-            resp = {'status': 0, 'message': 'index '+str(result)+'已经存在'}
+            resp = {'status': 0, 'message': 'index ' + str(result) + '已经存在'}
             return HttpResponse(ujson.dumps(resp), content_type='application/json; charset=utf-8')
         resp = {'status': 1, 'message': '添加成功'}
         return HttpResponse(ujson.dumps(resp), content_type='application/json; charset=utf-8')
     resp = {'status': 0, 'message': '前缀不存在无法添加'}
     return HttpResponse(ujson.dumps(resp), content_type='application/json; charset=utf-8')
+
 
 @auth_permission_required('handleProjectVue.user')
 def DelHandleDate(request):
@@ -408,6 +410,7 @@ def DelHandleDate(request):
     resp = {'status': 0, 'message': '前缀不存在无法删除'}
     return HttpResponse(ujson.dumps(resp), content_type='application/json; charset=utf-8')
 
+
 @auth_permission_required('handleProjectVue.user')
 def UpdateHandleDate(request):
     response = ujson.loads(request.body.decode('utf-8'))
@@ -419,8 +422,8 @@ def UpdateHandleDate(request):
     perfix_record = handles.objects.filter(perix=perfix)
     handle_record = reslove(perfix, ip='39.107.238.25', port=8000)
     if perfix_record.exists() or handle_record is not None:
-        handle1= handles.objects.get(perix=perfix)
-        if  response.get('Data'):
+        handle1 = handles.objects.get(perix=perfix)
+        if response.get('Data'):
             data = response.get('Data')
         else:
             resp = {'status': 0, 'message': '输入正确的data'}
@@ -447,14 +450,12 @@ def UpdateHandleDate(request):
             record.value.append(i.get('data'))
         result = updatedata(record, perfix, handle1.server.ip, handle1.server.port)
         if result is not 1:
-            resp = {'status': 0, 'message': 'index '+str(result)+'不存在'}
+            resp = {'status': 0, 'message': 'index ' + str(result) + '不存在'}
             return HttpResponse(ujson.dumps(resp), content_type='application/json; charset=utf-8')
         resp = {'status': 1, 'message': '修改成功'}
         return HttpResponse(ujson.dumps(resp), content_type='application/json; charset=utf-8')
     resp = {'status': 0, 'message': '前缀不存在无法修改'}
     return HttpResponse(ujson.dumps(resp), content_type='application/json; charset=utf-8')
-
-
 
 
 def Classifiedquery(request):
@@ -549,27 +550,27 @@ def Classifiedquery(request):
             resp = {'data': data_list, 'totalCount': paginator.count}
             return HttpResponse(ujson.dumps(resp))
 
-    if (re.search(niotpantter, biaoshi)!=None):
-            datalist = serverquery.OIDquery('172.171.1.80', biaoshi)
-            if datalist == {}:
-                resp = {'status': 0, 'message': "不能解析该标识"}
-                return HttpResponse(ujson.dumps(resp))
-            result = dict()
-            result['type'] = 'niot'
-            result['status'] = 1
-            result['data'] = [datalist]
-            return HttpResponse(ujson.dumps(result))
-    if(re.search(ecodepantter, biaoshi) != None):
-            datalist = serverquery.OIDquery('172.171.1.80', biaoshi)
-            if datalist == {}:
-                resp = {'status': 0, 'message': "不能解析该标识"}
-                return HttpResponse(ujson.dumps(resp))
-            result = dict()
-            result['type'] = 'ecode'
-            result['status'] = 1
-            result['data'] = [datalist]
-            return HttpResponse(ujson.dumps(result))
-    if  (re.search(oidpanntter, biaoshi)!=None ) :
+    if (re.search(niotpantter, biaoshi) != None):
+        datalist = serverquery.OIDquery('172.171.1.80', biaoshi)
+        if datalist == {}:
+            resp = {'status': 0, 'message': "不能解析该标识"}
+            return HttpResponse(ujson.dumps(resp))
+        result = dict()
+        result['type'] = 'niot'
+        result['status'] = 1
+        result['data'] = [datalist]
+        return HttpResponse(ujson.dumps(result))
+    if (re.search(ecodepantter, biaoshi) != None):
+        datalist = serverquery.OIDquery('172.171.1.80', biaoshi)
+        if datalist == {}:
+            resp = {'status': 0, 'message': "不能解析该标识"}
+            return HttpResponse(ujson.dumps(resp))
+        result = dict()
+        result['type'] = 'ecode'
+        result['status'] = 1
+        result['data'] = [datalist]
+        return HttpResponse(ujson.dumps(result))
+    if (re.search(oidpanntter, biaoshi) != None):
         datalist = serverquery.OIDquery('172.171.1.80', biaoshi)
         if datalist == {}:
             resp = {'status': 0, 'message': "不能解析该标识"}
@@ -590,15 +591,15 @@ def Classifiedquery(request):
         result['data'] = datalist
         return HttpResponse(ujson.dumps(result))
     if re.match(DNSpattern, biaoshi) != None:
-            datalist = serverquery.DNSquery('172.171.1.80', biaoshi)
-            if datalist == []:
-                resp = {'status': 0, 'message': "不能解析该标识"}
-                return HttpResponse(ujson.dumps(resp))
-            result = dict()
-            result['status'] =1
-            result['type'] = 'dns'
-            result['data'] = datalist
-            return HttpResponse(ujson.dumps(result))
+        datalist = serverquery.DNSquery('172.171.1.80', biaoshi)
+        if datalist == []:
+            resp = {'status': 0, 'message': "不能解析该标识"}
+            return HttpResponse(ujson.dumps(resp))
+        result = dict()
+        result['status'] = 1
+        result['type'] = 'dns'
+        result['data'] = datalist
+        return HttpResponse(ujson.dumps(result))
     resp = {'status': 0, 'message': "不能解析该标识"}
     return HttpResponse(ujson.dumps(resp))
 
@@ -612,6 +613,7 @@ def Download(request):
     response['Content-Disposition'] = 'attachment;filename="example.xlsx"'
     return response
 
+
 @auth_permission_required('handleProjectVue.user')
 def upload_file(request):
     if request.method == 'POST':
@@ -622,7 +624,7 @@ def upload_file(request):
         serverid = request.POST['serverid']
         server2 = server.objects.get(id=serverid)
         fix2 = request.POST['prefix']
-        now =django.utils.timezone.datetime.now().strftime('%Y-%m-%d')
+        now = django.utils.timezone.datetime.now().strftime('%Y-%m-%d')
         uploadedFile = request.FILES.get('file', None)
         wb = xlrd.open_workbook(filename=uploadedFile.name, file_contents=request.FILES['file'].read())
         current_date = django.utils.timezone.datetime.now()
@@ -658,15 +660,12 @@ def upload_file(request):
             error = error.append(typeerror)
             typetrue = no_index100[~no_index100['type'].isin(errortype)]
 
-
-
             # 处理数据相同行
             same_df = typetrue[typetrue.duplicated()]
             same_df['error'] = ('have the same vlue , system have creat once succeed you don not neet to creat again')
             error = error.append(same_df)
             nosame_df = typetrue.drop_duplicates()
             group1 = nosame_df.groupby(nosame_df['prefix'])
-
 
             # 创建一个空的Dataframe
             errorprefix = pd.DataFrame()
@@ -730,7 +729,7 @@ def OneQuery(request):
         data = list()
         i = 0
         for row in handle1.context:
-              if row.get('index') is not 100:
+            if row.get('index') is not 100:
                 i = i + 1
                 data.append(row)
         if data == []:
@@ -766,7 +765,8 @@ def ManyQuery(request):
         handles1 = handles.objects.filter(username__contains=creatname, perix__contains=prefix,
                                           company__contains=companyname,
                                           time__lte=endTime, time__gte=startTime).values('id', 'username', 'perix',
-                                                                                         'time', 'company', 'server_id').order_by('-time')
+                                                                                         'time', 'company',
+                                                                                         'server_id').order_by('-time')
         paginator = Paginator(handles1, pageSize)
         if page:
             data_list = paginator.page(page).object_list
@@ -779,7 +779,8 @@ def ManyQuery(request):
         handles1 = handles.objects.filter(username=user1.username, perix__contains=prefix,
                                           company__contains=companyname,
                                           time__lte=endTime, time__gte=startTime).values('id', 'username', 'perix',
-                                                                                         'time', 'company', 'server_id').order_by('-time')
+                                                                                         'time', 'company',
+                                                                                         'server_id').order_by('-time')
         paginator = Paginator(handles1, pageSize)
         if page:
             data_list = paginator.page(page).object_list
@@ -815,7 +816,8 @@ def VisitStatus(request):
         handles1 = handles.objects.filter(username__contains=creatname, perix__contains=prefix,
                                           company__contains=companyname,
                                           time__lte=endTime, time__gte=startTime).values('id', 'username', 'perix',
-                                                                                         'time', 'company', 'server_id', 'count').order_by('-time')
+                                                                                         'time', 'company', 'server_id',
+                                                                                         'count').order_by('-time')
         paginator = Paginator(handles1, pageSize)
         if page:
             data_list = paginator.page(page).object_list
@@ -828,7 +830,8 @@ def VisitStatus(request):
         handles1 = handles.objects.filter(username=user1.username, perix__contains=prefix,
                                           company__contains=companyname,
                                           time__lte=endTime, time__gte=startTime).values('id', 'username', 'perix',
-                                                                                         'time', 'company', 'server_id','count').order_by('-time')
+                                                                                         'time', 'company', 'server_id',
+                                                                                         'count').order_by('-time')
         paginator = Paginator(handles1, pageSize)
         if page:
             data_list = paginator.page(page).object_list
@@ -836,7 +839,6 @@ def VisitStatus(request):
             data_list = paginator.page(1).object_list
         resp = {'data': data_list, 'totalCount': paginator.count}
         return HttpResponse(ujson.dumps(resp))
-
 
 
 @auth_permission_required('handleProjectVue.user')  # 修改handle数据
@@ -955,7 +957,6 @@ def resolveCount(request):
             'time': str(item.get('year')) + "-" + str(item.get('month')) + "-" + str(item.get('day')),
             'count': item.get('count')
         })
-
     print res_data
     resp = {'status': 1, 'data': res_data}
     return HttpResponse(ujson.dumps(resp))
@@ -976,7 +977,7 @@ def responseSuccess(request):
         resp = {'status': 0, 'data': 100}
         return HttpResponse(ujson.dumps(resp))
     else:
-        resp = {'status': 1, 'data': (format(float(data1) / float(data+data1), '.2f'))}
+        resp = {'status': 1, 'data': (format(float(data1) / float(data + data1), '.2f'))}
         return HttpResponse(ujson.dumps(resp))
 
 
