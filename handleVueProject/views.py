@@ -491,7 +491,7 @@ def Classifiedquery(request):
     biaoshilist=['10','11','20','21','22','25','27','77','44','86']
     biaoshilist2=['0.NA','108']
     if str2[0:2] in biaoshilist  or str2[0:3] in biaoshilist2:
-        handle_record = reslove(str2, ip='39.107.238.25', port=8000)
+        handle_record = reslove(str2, ip='172.171.1.80', port=8080)
         handle1 = analyze_json(handle_record)
         d1 = dict()
         d1['status'] = 1
