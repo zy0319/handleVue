@@ -479,6 +479,27 @@ def Classifiedquery(request):
     gs1panntter = '[0-9]*'
     DNSpattern = '[a-zA-Z0-9][-a-zA-Z0-9]{0,62}(\.[a-zA-Z0-9][-a-zA-Z0-9]{0,62})+\.?'
     now = django.utils.timezone.datetime.now().strftime('%Y-%m-%d')
+    str2=''
+    for x in str(biaoshi):
+        if x!=' ':
+            str2=str2+x
+    biaoshilist=['10','11','20','21','22','25','27','77','44','86']
+    biaoshilist2=['0.NA','108']
+    if str2[0:2] in biaoshilist  or str2[0:3] in biaoshilist2:
+        handle_record = reslove(str2, ip='39.107.238.25', port=8000)
+        handle1 = analyze_json(handle_record)
+        d1 = dict()
+        d1['status'] = 1
+        d1['type'] = 'handle'
+        data = list()
+        i = 0
+        for row in handle1.context:
+            i = i + 1
+            data.append(row)
+        # data.append(d1)
+        if data != []:
+            d1['data'] = data
+            return HttpResponse(ujson.dumps(d1))
     if type == 1 and re.search(handlepattern, biaoshi):
         handleperix = biaoshi
         obj1 = handles.objects.filter(perix=handleperix)
