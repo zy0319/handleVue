@@ -463,19 +463,11 @@ def UpdateHandleDate(request):
 
 
 def Classifiedquery(request):
-    if request.method != 'POST':
-        resp = {'status': 0, 'message': '请用post方法'}
-        return HttpResponse(ujson.dumps(resp))
     data = ujson.loads(request.body.decode('utf-8'))
     if data.get('prefix'):
         biaoshi = data.get('prefix')
     else:
         resp = {'status': 0, 'message': '输入正确的prefix'}
-        return HttpResponse(ujson.dumps(resp), content_type='application/json; charset=utf-8')
-    if data.get('type'):
-        type = data.get('type')
-    else:
-        resp = {'status': 0, 'message': '输入正确的type'}
         return HttpResponse(ujson.dumps(resp), content_type='application/json; charset=utf-8')
     handlepattern = '20.500.'
     niotpantter = 'cn.pub.xty.100'
@@ -490,7 +482,7 @@ def Classifiedquery(request):
             str2=str2+x
     biaoshilist = ['10', '11', '20', '21', '22', '25', '27', '77', '44', '86']
     biaoshilist2 = ['0.NA']
-    if type == 1 and re.search(handlepattern, biaoshi):
+    if re.search(handlepattern, biaoshi):
         handleperix = biaoshi
         obj1 = handles.objects.filter(perix=handleperix)
         if obj1.exists():
@@ -525,20 +517,6 @@ def Classifiedquery(request):
             resolveRecord1 = resolveRecord.create(ip='172.171.1.80', prefix=handleperix, success=1, time=now)
             resolveRecord1.save()
             return HttpResponse(ujson.dumps(d1))
-    if type == 2:
-        count = handles.objects.filter(perix__startswith=biaoshi).count()
-        if count > 0:
-            handles1 = handles.objects.filter(perix__startswith=biaoshi).values('id', 'perix', 'username')
-            page = data.get('pageNum')  # 必须
-            pageSize = data.get('pageSize')  # 必须 book_list = book.objects.filter(date__range=(date_from, date_to))
-            paginator = Paginator(handles1, pageSize)
-            if page:
-                data_list = paginator.page(page).object_list
-            else:
-                data_list = paginator.page(1).object_list
-            resp = {'data': data_list, 'totalCount': paginator.count}
-            return HttpResponse(ujson.dumps(resp))
-
     if (re.search(niotpantter, biaoshi) != None):
         datalist = serverquery.OIDquery('172.171.1.80', biaoshi)
         if datalist == {}:
