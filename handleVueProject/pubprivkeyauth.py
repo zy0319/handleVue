@@ -17,8 +17,10 @@ from Crypto.Random import random
 from Crypto.Util.asn1 import DerSequence
 
 path_to_private_key_pem_file_302 = './handleVueProject/replpriv_302.pem'
-path_to_private_key_pem_file_aliyun = './handleVueProject/admpriv.pem'
+path_to_private_key_pem_file_aliyun = '../handleVueProject/admpriv.pem'
 path_to_private_key_pem_file_nanJing = './handleVueProject/admprivNanJing.pem'
+skey = '../handleVueProject/admpriv.bin'
+
 admin_id_nanJing = '300:0.NA/20.500.12410'
 admin_id_aliyun = '300:0.NA/20.500.12357'
 
