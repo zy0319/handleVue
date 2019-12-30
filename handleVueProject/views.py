@@ -21,7 +21,7 @@ from handleVueProject import serverquery
 from handleVueProject.pubprivkeyauth import adddata, daletedata, updatedata
 from serverquery import sftpFile, downFile, removeFile
 from handleVue.settings import HANDLE_CONFIG
-
+from django.db.models import Sum
 UserModel = get_user_model()
 
 
@@ -100,7 +100,7 @@ def register(request):
                 # path1 = os.path.join('upload/'+accessory.name)
                 # print path1
                 # os.rename("upload/" + accessory.name, "upload/" + userName + after)
-                sftpFile("172.171.1.80", "22", "root", "pms123handle$%^", accessory, path)
+                sftpFile(HANDLE_CONFIG['server'].get('ip'), HANDLE_CONFIG['server'].get('sshport'),  HANDLE_CONFIG['server'].get('username'),  HANDLE_CONFIG['server'].get('password'), accessory, path)
                 user1 = user.create(userName, password, userPhone, userEmail, userCardId, userName, 0, now,
                                     companyName)
                 user1.set_password(password)
@@ -151,7 +151,7 @@ def userDelete(request):
     user1 = user.objects.get(id=id)
     username = user1.username
     user1.delete()
-    removeFile("172.171.1.80", "22", "root", "pms123handle$%^", username + '.xlsx')
+    removeFile(HANDLE_CONFIG['server'].get('ip'), HANDLE_CONFIG['server'].get('sshport'),  HANDLE_CONFIG['server'].get('username'),  HANDLE_CONFIG['server'].get('password'), username + '.xlsx')
     # os.remove("upload/" + username + '.xlsx')
     resp = {'status': 1, 'message': 'delete success'}
     return HttpResponse(ujson.dumps(resp), content_type='application/json; charset=utf-8')
@@ -243,7 +243,7 @@ def downVerify(request):
     user1 = user.objects.get(id=id)
     path = os.path.join('/home/fnii/registerFile/', user1.username + '.xlsx')
     print path
-    file = downFile("172.171.1.80", "22", "root", "pms123handle$%^", path)
+    file = downFile(HANDLE_CONFIG['server'].get('ip'), HANDLE_CONFIG['server'].get('sshport'),  HANDLE_CONFIG['server'].get('username'),  HANDLE_CONFIG['server'].get('password'), path)
     # file = open("upload/" + user1.username + '.xlsx', 'rb')
     HttpResponse = FileResponse(file)
     HttpResponse['Content-Type'] = 'application/octet-stream'
@@ -316,7 +316,8 @@ def CreateHandle(request):
         record.type.append(i.get('type'))
         record.value.append(i.get('data'))
     perfix = response.get('prefix')
-    handle_record = reslove(perfix, ip='172.171.1.80', port=8080)
+    #HANDLE_CONFIG['server'].get('ip'), HANDLE_CONFIG['server'].get('sshport'),  HANDLE_CONFIG['server'].get('username'),  HANDLE_CONFIG['server'].get('password')
+    handle_record = reslove(perfix, ip=HANDLE_CONFIG['server'].get('ip'), port=HANDLE_CONFIG['server'].get('handleport'))
     handle1 = handles.objects.filter(perix=perfix)
     if handle_record is not None or handle1.exists():
         resp = {'status': 0, 'message': '该前缀已经存在'}
@@ -330,7 +331,7 @@ def CreateHandle(request):
     server2 = server.objects.get(id=1)
     handle1 = handles.create(company=company, username=username, perix=perfix, count=0, time=now, server=server2)
     handle1.save()
-    createh(record, perfix, '172.171.1.80')
+    createh(record, perfix, HANDLE_CONFIG['server'].get('ip'))
     resp = {'status': 1, 'message': '创建成功'}
     return HttpResponse(ujson.dumps(resp), content_type='application/json; charset=utf-8')
 
@@ -344,7 +345,7 @@ def AddHandleDate(request):
         resp = {'status': 0, 'message': '输入正确的prefix'}
         return HttpResponse(ujson.dumps(resp), content_type='application/json; charset=utf-8')
     perfix_record = handles.objects.filter(perix=perfix)
-    handle_record = reslove(perfix, ip='172.171.1.80', port=8080)
+    handle_record = reslove(perfix,  ip=HANDLE_CONFIG['server'].get('ip'), port=HANDLE_CONFIG['server'].get('handleport'))
     if perfix_record.exists() or handle_record is not None:
         handle1 = handles.objects.get(perix=perfix)
 
@@ -373,8 +374,7 @@ def AddHandleDate(request):
             record.index.append(i.get('index'))
             record.type.append(i.get('type'))
             record.value.append(i.get('data'))
-        result = adddata(record, perfix, '172.171.1.80', 8080)
-
+        result = adddata(record, perfix, handle1.server.ip, handle1.server.port)
         # result = adddata(record, perfix, handle1.server.ip, handle1.server.port)
         if result is not 1:
             resp = {'status': 0, 'message': 'index ' + str(result) + '已经存在'}
@@ -394,7 +394,7 @@ def DelHandleDate(request):
         resp = {'status': 0, 'message': '输入正确的prefix'}
         return HttpResponse(ujson.dumps(resp), content_type='application/json; charset=utf-8')
     perfix_record = handles.objects.filter(perix=perfix)
-    handle_record = reslove(perfix, ip='172.171.1.80', port=8080)
+    handle_record = reslove(perfix, ip=HANDLE_CONFIG['server'].get('ip'), port=HANDLE_CONFIG['server'].get('handleport'))
     if perfix_record.exists() or handle_record is not None:
         handle1 = handles.objects.get(perix=perfix)
         if response.get('index'):
@@ -405,7 +405,7 @@ def DelHandleDate(request):
         if 100 in data:
             resp = {'status': 0, 'message': 'index不能为100'}
             return HttpResponse(ujson.dumps(resp), content_type='application/json; charset=utf-8')
-        result = daletedata(data, perfix, '172.171.1.80', 8080)
+        result = daletedata(data, perfix, handle1.server.ip, handle1.server.port)
         if result is not 1:
             resp = {'status': 0, 'message': 'index ' + str(result) + '不存在'}
             return HttpResponse(ujson.dumps(resp), content_type='application/json; charset=utf-8')
@@ -424,7 +424,7 @@ def UpdateHandleDate(request):
         resp = {'status': 0, 'message': '输入正确的prefix'}
         return HttpResponse(ujson.dumps(resp), content_type='application/json; charset=utf-8')
     perfix_record = handles.objects.filter(perix=perfix)
-    handle_record = reslove(perfix, ip='172.171.1.80', port=8080)
+    handle_record = reslove(perfix, ip=HANDLE_CONFIG['server'].get('ip'), port=HANDLE_CONFIG['server'].get('handleport'))
     if perfix_record.exists() or handle_record is not None:
         handle1 = handles.objects.get(perix=perfix)
         if response.get('Data'):
@@ -452,7 +452,7 @@ def UpdateHandleDate(request):
             record.index.append(i.get('index'))
             record.type.append(i.get('type'))
             record.value.append(i.get('data'))
-        result = updatedata(record, perfix, '172.171.1.80', 8080)
+        result = updatedata(record, perfix, handle1.server.ip, handle1.server.port)
         if result is not 1:
             resp = {'status': 0, 'message': 'index ' + str(result) + '不存在'}
             return HttpResponse(ujson.dumps(resp), content_type='application/json; charset=utf-8')
@@ -463,19 +463,11 @@ def UpdateHandleDate(request):
 
 
 def Classifiedquery(request):
-    if request.method != 'POST':
-        resp = {'status': 0, 'message': '请用post方法'}
-        return HttpResponse(ujson.dumps(resp))
     data = ujson.loads(request.body.decode('utf-8'))
     if data.get('prefix'):
         biaoshi = data.get('prefix')
     else:
         resp = {'status': 0, 'message': '输入正确的prefix'}
-        return HttpResponse(ujson.dumps(resp), content_type='application/json; charset=utf-8')
-    if data.get('type'):
-        type = data.get('type')
-    else:
-        resp = {'status': 0, 'message': '输入正确的type'}
         return HttpResponse(ujson.dumps(resp), content_type='application/json; charset=utf-8')
     handlepattern = '20.500.'
     niotpantter = 'cn.pub.xty.100'
@@ -488,24 +480,9 @@ def Classifiedquery(request):
     for x in str(biaoshi):
         if x!=' ':
             str2=str2+x
-    biaoshilist=['10','11','20','21','22','25','27','77','44','86']
-    biaoshilist2=['0.NA','108']
-    if str2[0:2] in biaoshilist  or str2[0:3] in biaoshilist2:
-        handle_record = reslove(str2, ip='39.107.238.25', port=8000)
-        handle1 = analyze_json(handle_record)
-        d1 = dict()
-        d1['status'] = 1
-        d1['type'] = 'handle'
-        data = list()
-        i = 0
-        for row in handle1.context:
-            i = i + 1
-            data.append(row)
-        # data.append(d1)
-        if data != []:
-            d1['data'] = data
-            return HttpResponse(ujson.dumps(d1))
-    if type == 1 and re.search(handlepattern, biaoshi):
+    biaoshilist = ['10', '11', '20', '21', '22', '25', '27', '77', '44', '86']
+    biaoshilist2 = ['0.NA']
+    if re.search(handlepattern, biaoshi):
         handleperix = biaoshi
         obj1 = handles.objects.filter(perix=handleperix)
         if obj1.exists():
@@ -514,7 +491,7 @@ def Classifiedquery(request):
             obj.save()
             handle_record = reslove(handleperix, obj.server.ip, obj.server.port)
         else:
-            handle_record = reslove(handleperix, ip='172.171.1.80', port=8080)
+            handle_record = reslove(handleperix,  ip=HANDLE_CONFIG['server'].get('ip'), port=HANDLE_CONFIG['server'].get('handleport'))
         handle1 = analyze_json(handle_record)
         d1 = dict()
         d1['status'] = 1
@@ -527,7 +504,7 @@ def Classifiedquery(request):
         # data.append(d1)
         if data == []:
             resp = {'status': 0, 'message': "标识不存在"}
-            resolveRecord1 = resolveRecord.create(ip='172.171.1.80', prefix=handleperix, success=0, time=now)
+            resolveRecord1 = resolveRecord.create( ip=HANDLE_CONFIG['server'].get('ip'), prefix=handleperix, success=0, time=now)
             resolveRecord1.save()
             return HttpResponse(ujson.dumps(resp))
         else:
@@ -537,25 +514,11 @@ def Classifiedquery(request):
             #     resolveRecord1 = resolveRecord.create(ip=obj.server.ip, prefix=handleperix, success=1, time=now)
             #     resolveRecord1.save()
             # else:
-            resolveRecord1 = resolveRecord.create(ip='172.171.1.80', prefix=handleperix, success=1, time=now)
+            resolveRecord1 = resolveRecord.create( ip=HANDLE_CONFIG['server'].get('ip'), prefix=handleperix, success=1, time=now)
             resolveRecord1.save()
             return HttpResponse(ujson.dumps(d1))
-    if type == 2:
-        count = handles.objects.filter(perix__startswith=biaoshi).count()
-        if count > 0:
-            handles1 = handles.objects.filter(perix__startswith=biaoshi).values('id', 'perix', 'username')
-            page = data.get('pageNum')  # 必须
-            pageSize = data.get('pageSize')  # 必须 book_list = book.objects.filter(date__range=(date_from, date_to))
-            paginator = Paginator(handles1, pageSize)
-            if page:
-                data_list = paginator.page(page).object_list
-            else:
-                data_list = paginator.page(1).object_list
-            resp = {'data': data_list, 'totalCount': paginator.count}
-            return HttpResponse(ujson.dumps(resp))
-
     if (re.search(niotpantter, biaoshi) != None):
-        datalist = serverquery.OIDquery('172.171.1.80', biaoshi)
+        datalist = serverquery.OIDquery( HANDLE_CONFIG['server'].get('ip'), biaoshi)
         if datalist == {}:
             resp = {'status': 0, 'message': "不能解析该标识"}
             return HttpResponse(ujson.dumps(resp))
@@ -565,7 +528,7 @@ def Classifiedquery(request):
         result['data'] = [datalist]
         return HttpResponse(ujson.dumps(result))
     if (re.search(ecodepantter, biaoshi) != None):
-        datalist = serverquery.OIDquery('172.171.1.80', biaoshi)
+        datalist = serverquery.OIDquery( HANDLE_CONFIG['server'].get('ip'), biaoshi)
         if datalist == {}:
             resp = {'status': 0, 'message': "不能解析该标识"}
             return HttpResponse(ujson.dumps(resp))
@@ -575,7 +538,7 @@ def Classifiedquery(request):
         result['data'] = [datalist]
         return HttpResponse(ujson.dumps(result))
     if (re.search(oidpanntter, biaoshi) != None):
-        datalist = serverquery.OIDquery('172.171.1.80', biaoshi)
+        datalist = serverquery.OIDquery(HANDLE_CONFIG['server'].get('ip'), biaoshi)
         if datalist == {}:
             resp = {'status': 0, 'message': "不能解析该标识"}
             return HttpResponse(ujson.dumps(resp))
@@ -584,8 +547,25 @@ def Classifiedquery(request):
         result['status'] = 1
         result['data'] = [datalist]
         return HttpResponse(ujson.dumps(result))
+    if str2[0:2] in biaoshilist or str2[0:4] in biaoshilist2:
+        handle_record = reslove(str2,  ip=HANDLE_CONFIG['server'].get('ip'), port=HANDLE_CONFIG['server'].get('handleport'))
+        handle1 = analyze_json(handle_record)
+        d1 = dict()
+        d1['status'] = 1
+        d1['type'] = 'handle'
+        data = list()
+        i = 0
+        for row in handle1.context:
+            i = i + 1
+            data.append(row)
+        # data.append(d1)
+        if data != []:
+            d1['data'] = data
+            resolveRecord1 = resolveRecord.create( ip=HANDLE_CONFIG['server'].get('ip'), prefix=biaoshi, success=1, time=now)
+            resolveRecord1.save()
+            return HttpResponse(ujson.dumps(d1))
     if biaoshi.isalnum()==True :
-        datalist = serverquery.GS1query('172.171.1.80', biaoshi)
+        datalist = serverquery.GS1query(HANDLE_CONFIG['server'].get('ip'), biaoshi)
         if datalist == []:
             resp = {'status': 0, 'message': "不能解析该标识"}
             return HttpResponse(ujson.dumps(resp))
@@ -595,7 +575,7 @@ def Classifiedquery(request):
         result['data'] = datalist
         return HttpResponse(ujson.dumps(result))
     if re.match(DNSpattern, biaoshi) != None:
-        datalist = serverquery.DNSquery('172.171.1.80', biaoshi)
+        datalist = serverquery.DNSquery( HANDLE_CONFIG['server'].get('ip'), biaoshi)
         if datalist == []:
             resp = {'status': 0, 'message': "不能解析该标识"}
             return HttpResponse(ujson.dumps(resp))
@@ -696,7 +676,7 @@ def upload_file(request):
                             handle1 = handles.create(company=company, username=username, perix=perfix, count=0,
                                                      time=now, server=server2)
                             handle1.save()
-                            createh(record, perfix, '172.171.1.80')
+                            createh(record, perfix, HANDLE_CONFIG['server'].get('ip'))
                             succeedcreate = succeedcreate.append(correct)
                         if correct.shape[0] != btype.shape[0]:
                             errortype = btype[btype['index'].str.match('^[1-9]\d*$') == False]
@@ -722,7 +702,7 @@ def OneQuery(request):
     data = ujson.loads(request.body.decode('utf-8'))
     perix = data.get('prefix')
     handle1 = handles.objects.get(perix=perix)
-    handle_record = reslove(perix, '172.171.1.80', 8080)
+    handle_record = reslove(perix,  ip=HANDLE_CONFIG['server'].get('ip'), port=HANDLE_CONFIG['server'].get('handleport'))
     handle1 = None
     handle1 = analyze_json(handle_record)
     for i in range(len(handle1.context)):
@@ -868,8 +848,8 @@ def UpdatehHandle(request):
         record.index.append(i.get('index'))
         record.type.append(i.get('type'))
         record.value.append(i.get('data'))
-    delete(perfix, '172.171.1.80')
-    createh(record, perfix, '172.171.1.80')
+    delete(perfix,  HANDLE_CONFIG['server'].get('ip'), )
+    createh(record, perfix, HANDLE_CONFIG['server'].get('ip'))
     resp = {'status': 1, 'message': "修改成功"}
     return HttpResponse(ujson.dumps(resp))
 
@@ -896,7 +876,7 @@ def UpdateServer(request):
     delete(prefix, handle.server.ip)
     server2 = server.objects.get(id=1)
     handles.objects.filter(perix=prefix).update(server=server2)
-    createh(record, prefix, '172.171.1.80')
+    createh(record, prefix, HANDLE_CONFIG['server'].get('ip'))
     resp = {'status': 1, 'message': "修改成功"}
     return HttpResponse(ujson.dumps(resp))
 
@@ -906,7 +886,7 @@ def DelHandle(request):
     response = ujson.loads(request.body.decode('utf-8'))
     perfix = response.get('prefix')
     handle1 = handles.objects.get(perix=perfix)
-    delete(perfix, '172.171.1.80')
+    delete(perfix,  HANDLE_CONFIG['server'].get('ip'))
     handle1 = handles.objects.filter(perix=perfix).delete()
     resp = {'status': 1, 'message': "删除成功"}
     return HttpResponse(ujson.dumps(resp))
@@ -936,6 +916,23 @@ def creatCount(request):
     print res_data
     resp = {'status': 1, 'data': res_data}
     return HttpResponse(ujson.dumps(resp))
+
+
+@auth_permission_required('handleProjectVue.user')  # 注册总个数
+def Registration(request):
+    response = ujson.loads(request.body.decode('utf-8'))
+    data = handles.objects.filter()
+    data2=resolveRecord.objects.filter()
+    Registcount=data.count()
+    analysis=data2.count()
+    # all_count = data.values('count').annotate(num_handle=Sum('count'))
+    result= dict()
+    result['registration'] = Registcount
+    result['analysis'] =  analysis
+    #all_count[0]['num_handle']
+    resp = {'status': 1, 'Data': result}
+    return HttpResponse(ujson.dumps(resp))
+
 
 
 @auth_permission_required('handleProjectVue.user')
@@ -987,6 +984,6 @@ def hardWare(request):
     response = ujson.loads(request.body.decode('utf-8'))
     id = response.get('id')
     server1 = server.objects.get(id=id)
-    data = serverquery.config(server1.ip, 22, server1.username, server1.password)
+    data = serverquery.config(HANDLE_CONFIG['server'].get('ip'), HANDLE_CONFIG['server'].get('sshport'),  HANDLE_CONFIG['server'].get('username'),  HANDLE_CONFIG['server'].get('password'))
     resp = {'status': 1, 'data': data}
     return HttpResponse(ujson.dumps(resp))

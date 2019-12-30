@@ -147,5 +147,15 @@ STATIC_URL = '/static/'
 
 HANDLE_CONFIG = {
     'registerTemplate_address': '/home/fnii/registerFile',
-    'netCard': 'lo'
+    'netCard': 'lo',
+    'server':
+    {
+        'ip': '172.171.1.80',
+        'sshport': 22,
+        'handleport': 8080,
+        'username': 'root',
+        'password': 'pms123handle$%^'
+     }
 }
+
+
