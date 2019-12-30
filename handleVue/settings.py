@@ -157,7 +157,7 @@ HANDLE_CONFIG = {
         'handleport': 8080,
         'username': 'root',
         'password': 'pms123handle$%^'
-     },
+     }
 }
 
 
