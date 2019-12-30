@@ -21,7 +21,6 @@ from handleVueProject import serverquery
 from handleVueProject.pubprivkeyauth import adddata, daletedata, updatedata
 from serverquery import sftpFile, downFile, removeFile
 from handleVue.settings import HANDLE_CONFIG
-from django.db.models import Sum
 UserModel = get_user_model()
 
 
@@ -331,7 +330,7 @@ def CreateHandle(request):
     server2 = server.objects.get(id=1)
     handle1 = handles.create(company=company, username=username, perix=perfix, count=0, time=now, server=server2)
     handle1.save()
-    createh(record, perfix, HANDLE_CONFIG['server'].get('ip'))
+    createh(record, perfix, HANDLE_CONFIG['server'].get('ip'), HANDLE_CONFIG['server'].get('handleport'))
     resp = {'status': 1, 'message': '创建成功'}
     return HttpResponse(ujson.dumps(resp), content_type='application/json; charset=utf-8')
 
@@ -848,8 +847,8 @@ def UpdatehHandle(request):
         record.index.append(i.get('index'))
         record.type.append(i.get('type'))
         record.value.append(i.get('data'))
-    delete(perfix,  HANDLE_CONFIG['server'].get('ip'), )
-    createh(record, perfix, HANDLE_CONFIG['server'].get('ip'))
+    delete(perfix,  HANDLE_CONFIG['server'].get('ip'), HANDLE_CONFIG['server'].get('handleport'))
+    createh(record, perfix, HANDLE_CONFIG['server'].get('ip'),HANDLE_CONFIG['server'].get('handleport'))
     resp = {'status': 1, 'message': "修改成功"}
     return HttpResponse(ujson.dumps(resp))
 
@@ -873,7 +872,7 @@ def UpdateServer(request):
         record.type.append(handle1.context[i].get('type'))
         record.value.append(handle1.context[i].get('datas'))
     print record.value
-    delete(prefix, handle.server.ip)
+    delete(prefix, handle.server.ip,handle.server.port)
     server2 = server.objects.get(id=1)
     handles.objects.filter(perix=prefix).update(server=server2)
     createh(record, prefix, HANDLE_CONFIG['server'].get('ip'))
@@ -886,7 +885,7 @@ def DelHandle(request):
     response = ujson.loads(request.body.decode('utf-8'))
     perfix = response.get('prefix')
     handle1 = handles.objects.get(perix=perfix)
-    delete(perfix,  HANDLE_CONFIG['server'].get('ip'))
+    delete(perfix,  HANDLE_CONFIG['server'].get('ip'),HANDLE_CONFIG['server'].get('handleport'))
     handle1 = handles.objects.filter(perix=perfix).delete()
     resp = {'status': 1, 'message': "删除成功"}
     return HttpResponse(ujson.dumps(resp))

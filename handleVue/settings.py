@@ -146,6 +146,8 @@ USE_TZ = True
 STATIC_URL = '/static/'
 
 HANDLE_CONFIG = {
+    'admin_id' : '300:0.NA/20.500.12410',
+    'key_pem_file': '/Users/zhangyi/PycharmProjects/handleVue/handleVueProject/admprivNanJing.pem',
     'registerTemplate_address': '/home/fnii/registerFile',
     'netCard': 'lo',
     'server':

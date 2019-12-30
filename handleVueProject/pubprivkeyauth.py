@@ -3,41 +3,28 @@ import json
 import base64
 import requests
 from datetime import datetime
-
 # RSA
 from Crypto.PublicKey import RSA
 from Crypto.Signature import PKCS1_v1_5
-from Crypto.Hash import SHA256
-
 # DSA
 from Crypto.PublicKey import DSA
 from Crypto.Hash import SHA256
-# from hashlib import SHA1
 from Crypto.Random import random
 from Crypto.Util.asn1 import DerSequence
-
-path_to_private_key_pem_file_302 = './handleVueProject/replpriv_302.pem'
-path_to_private_key_pem_file_aliyun = '../handleVueProject/admpriv.pem'
-path_to_private_key_pem_file_nanJing = './handleVueProject/admprivNanJing.pem'
-skey = '../handleVueProject/admpriv.bin'
-
-admin_id_nanJing = '300:0.NA/20.500.12410'
-admin_id_aliyun = '300:0.NA/20.500.12357'
+from handleVue.settings import HANDLE_CONFIG
 
 
-# ip = '172.171.1.80'
-# port = 8080
-# prefix = '20.500.12357/ZSQ1'
+# path_to_private_key_pem_file_nanJing = './handleVueProject/admprivNanJing.pem'
+# admin_id_nanJing = '300:0.NA/20.500.12410'
 
-# ip1='101.132.112.222'
-# port = 8080
-
+path_to_private_key_pem_file_nanJing = HANDLE_CONFIG['key_pem_file']
+admin_id_nanJing = HANDLE_CONFIG['admin_id']
 
 def update(ip, prefix):
-    if ip == '172.171.1.80':
+    # if ip == '172.171.1.80':
         update_handle_record(prefix, path_to_private_key_pem_file_nanJing, admin_id_nanJing, ip, 8080)
-    elif ip == '39.107.238.25':
-        update_handle_record(prefix, path_to_private_key_pem_file_aliyun, admin_id_aliyun, ip, 8000)
+    # elif ip == '39.107.238.25':
+    #     update_handle_record(prefix, path_to_private_key_pem_file_aliyun, admin_id_aliyun, ip, 8000)
 
 
 def adddata(record, prefix, ip, port):
@@ -60,12 +47,12 @@ def adddata(record, prefix, ip, port):
         return errorlist
     datalist.extend(records)
     handle_record = {u'values': datalist, u'handle': unicode(prefix), u'responseCode': 1}
-    if ip == '172.171.1.80':
-        create_handle_record(handle_record, prefix, path_to_private_key_pem_file_nanJing, admin_id_nanJing, ip=ip,
+    # if ip == '172.171.1.80':
+    create_handle_record(handle_record, prefix, path_to_private_key_pem_file_nanJing, admin_id_nanJing, ip=ip,
                              port=port)
-    elif ip == '39.107.238.25':
-        create_handle_record(handle_record, prefix, path_to_private_key_pem_file_aliyun, admin_id_aliyun, ip=ip,
-                             port=port)
+    # elif ip == '39.107.238.25':
+    #     create_handle_record(handle_record, prefix, path_to_private_key_pem_file_aliyun, admin_id_aliyun, ip=ip,
+    #                          port=port)
     return 1
 
 
@@ -80,12 +67,12 @@ def daletedata(index, prefix, ip, port):
             if i.get('index') in index:
                 datalist.remove(i)
         handle_record = {u'values': datalist, u'handle': unicode(prefix), u'responseCode': 1}
-        if ip == '172.171.1.80':
-            create_handle_record(handle_record, prefix, path_to_private_key_pem_file_nanJing, admin_id_nanJing, ip=ip,
-                                 port=port)
-        elif ip == '39.107.238.25':
-            create_handle_record(handle_record, prefix, path_to_private_key_pem_file_aliyun, admin_id_aliyun, ip=ip,
-                                 port=port)
+        # if ip == '172.171.1.80':
+        create_handle_record(handle_record, prefix, path_to_private_key_pem_file_nanJing, admin_id_nanJing, ip=ip,
+                             port=port)
+        # elif ip == '39.107.238.25':
+        #     create_handle_record(handle_record, prefix, path_to_private_key_pem_file_aliyun, admin_id_aliyun, ip=ip,
+        #                          port=port)
         return 1
     error = list(set(index) - set(indexlist))
     return error
@@ -117,50 +104,50 @@ def updatedata(record, prefix, ip, port):
             datalist.remove(i)
     datalist.extend(records)
     handle_record = {u'values': datalist, u'handle': unicode(prefix), u'responseCode': 1}
-    if ip == '172.171.1.80':
-        create_handle_record(handle_record, prefix, path_to_private_key_pem_file_nanJing, admin_id_nanJing, ip=ip,
+    # if ip == '172.171.1.80':
+    create_handle_record(handle_record, prefix, path_to_private_key_pem_file_nanJing, admin_id_nanJing, ip=ip,
                              port=port)
-    elif ip == '39.107.238.25':
-        create_handle_record(handle_record, prefix, path_to_private_key_pem_file_aliyun, admin_id_aliyun, ip=ip,
-                             port=port)
+    # elif ip == '39.107.238.25':
+    #     create_handle_record(handle_record, prefix, path_to_private_key_pem_file_aliyun, admin_id_aliyun, ip=ip,
+    #                          port=port)
     return 1
 
 
-def delete(prefix, ip):
-    if ip == '172.171.1.80':
-        delete_handle_record(prefix, path_to_private_key_pem_file_nanJing, admin_id_nanJing, ip, 8080)
-    elif ip == '39.107.238.25':
-        delete_handle_record(prefix, path_to_private_key_pem_file_aliyun, admin_id_aliyun, ip, 8000)
+def delete(prefix, ip, port):
+    # if ip == '172.171.1.80':
+    delete_handle_record(prefix, path_to_private_key_pem_file_nanJing, admin_id_nanJing, ip, port)
+    # elif ip == '39.107.238.25':
+    #     delete_handle_record(prefix, path_to_private_key_pem_file_aliyun, admin_id_aliyun, ip, 8000)
 
 
-def createh(record, prefix, ip):
+def createh(record, prefix, ip, port):
     current_date = datetime.now()
     current_date_format = unicode(current_date.strftime('%Y-%m-%dT%H:%M:%SZ'))
     records = []
-    if ip == '172.171.1.80':
-        for i in range(len(record.index)):
-            records.append(
-                {u'index': record.index[i], u'ttl': 86400, u'type': record.type[i], u'timestamp': current_date_format,
-                 u'data': {u'value': record.value[i], u'format': u'string'}})
-        records.append({u'index': 100, u'ttl': 86400, u'type': u'HS_ADMIN', u'timestamp': current_date_format,
-                        u'data': {u'value': {u'index': 200, u'handle': unicode(admin_id_nanJing), u'permissions': u''},
-                                  u'format': u'admin'}})
-        handle_record = {u'values': records, u'handle': unicode(prefix), u'responseCode': 1}
-        # create_handle_record(handle_record, prefix, path_to_private_key_pem_file_302, '302:0.NA/20.500.12410', ip=ip, port=8000)
+    # if ip == '172.171.1.80':
+    for i in range(len(record.index)):
+        records.append(
+            {u'index': record.index[i], u'ttl': 86400, u'type': record.type[i], u'timestamp': current_date_format,
+             u'data': {u'value': record.value[i], u'format': u'string'}})
+    records.append({u'index': 100, u'ttl': 86400, u'type': u'HS_ADMIN', u'timestamp': current_date_format,
+                    u'data': {u'value': {u'index': 200, u'handle': unicode(admin_id_nanJing), u'permissions': u''},
+                              u'format': u'admin'}})
+    handle_record = {u'values': records, u'handle': unicode(prefix), u'responseCode': 1}
+    # create_handle_record(handle_record, prefix, path_to_private_key_pem_file_302, '302:0.NA/20.500.12410', ip=ip, port=8000)
 
-        create_handle_record(handle_record, prefix, path_to_private_key_pem_file_nanJing, admin_id_nanJing, ip=ip,
-                             port=8080)
-    elif ip == '39.107.238.25':
-        for i in range(len(record.index)):
-            records.append(
-                {u'index': record.index[i], u'ttl': 86400, u'type': record.type[i], u'timestamp': current_date_format,
-                 u'data': {u'value': record.value[i], u'format': u'string'}})
-        records.append({u'index': 100, u'ttl': 86400, u'type': u'HS_ADMIN', u'timestamp': current_date_format,
-                        u'data': {u'value': {u'index': 200, u'handle': unicode(admin_id_aliyun), u'permissions': u''},
-                                  u'format': u'admin'}})
-        handle_record = {u'values': records, u'handle': unicode(prefix), u'responseCode': 1}
-        create_handle_record(handle_record, prefix, path_to_private_key_pem_file_aliyun, admin_id_aliyun, ip=ip,
-                             port=8000)
+    create_handle_record(handle_record, prefix, path_to_private_key_pem_file_nanJing, admin_id_nanJing, ip=ip,
+                         port=port)
+    # elif ip == '39.107.238.25':
+    #     for i in range(len(record.index)):
+    #         records.append(
+    #             {u'index': record.index[i], u'ttl': 86400, u'type': record.type[i], u'timestamp': current_date_format,
+    #              u'data': {u'value': record.value[i], u'format': u'string'}})
+    #     records.append({u'index': 100, u'ttl': 86400, u'type': u'HS_ADMIN', u'timestamp': current_date_format,
+    #                     u'data': {u'value': {u'index': 200, u'handle': unicode(admin_id_aliyun), u'permissions': u''},
+    #                               u'format': u'admin'}})
+    #     handle_record = {u'values': records, u'handle': unicode(prefix), u'responseCode': 1}
+    #     create_handle_record(handle_record, prefix, path_to_private_key_pem_file_aliyun, admin_id_aliyun, ip=ip,
+    #                          port=8000)
 
 
 def reslove(prefix, ip, port):
@@ -407,5 +394,5 @@ def generate_client_nonce_bytes():
     return bytearray(os.urandom(16))
 
 
-if __name__ == '__main__':
-    delete('20.500.12357/test01', '39.107.238.25')
+# if __name__ == '__main__':
+#     delete('20.500.12357/test01', '39.107.238.25')
